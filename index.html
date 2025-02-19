@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Meeting Turn and Next Update at Tue 23:59:59</title>
+  <title>Meeting Turn Wheels</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -18,10 +18,11 @@
       max-width: 500px;
       background-color: #fff;
       padding: 20px;
-      margin-top: 20px;
+      margin: 20px 0;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       border-radius: 8px;
       text-align: center;
+      width: 90%;
     }
     h1 {
       margin-bottom: 10px;
@@ -32,12 +33,14 @@
     canvas {
       max-width: 100%;
       height: auto;
+      margin: 10px 0;
     }
   </style>
 </head>
 <body>
+  <!-- Weekly Meeting Wheel (4 groups) -->
   <div class="container">
-    <h1>Group Meeting Wheel</h1>
+    <h1>Group Meeting Wheel (Weekly)</h1>
     <canvas id="wheelCanvas" width="400" height="400"></canvas>
     <p id="currentMember"></p>
     <p id="nextUpdateDate"></p>
@@ -46,29 +49,24 @@
     </p>
   </div>
 
+  <!-- Biweekly Meeting Wheel (12 members) -->
+  <div class="container">
+    <h1>Biweekly Meeting Wheel</h1>
+    <canvas id="biweekWheelCanvas" width="400" height="400"></canvas>
+    <p id="biweekCurrentMember"></p>
+    <p id="biweekNextUpdateDate"></p>
+    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+      The meeting turn updates every two weeks on Tuesday at 23:59:59.
+    </p>
+  </div>
+
   <script>
-    // List of groups (speakers) as members.
-    // Each group is a comma-separated list of names.
-    const members = [
-      "Yuan Shibo, Tommy, Nathan", 
-      "Evan, Huang Junkun, Chen Haoxuan",
-      "Lyu Weitao, Sun Jialin, Cao Yujie", 
-      "Zhuang Zi, Quan Feiyu, Tian Yuxiang"
-    ];
+    // ------------------------------
+    // Shared Helper and Variables
+    // ------------------------------
 
-    /* 
-      Set your reference start date.
-      In this example, the reference is Tuesday, February 18, 2025 at 10:00 AM.
-      We want the meeting update to be effective on that same day at 23:59:59.
-    */
-    const startDate = new Date("2025-02-18T10:00:00");
-
-    // Define the number of milliseconds in one week.
-    const msPerWeek = 1000 * 60 * 60 * 24 * 7;
-
-    // Helper function:
-    // Returns the effective Tuesday update for a given date.
-    // The effective Tuesday update is the most recent Tuesday at 23:59:59.
+    // Function to get the effective Tuesday update for a given date.
+    // The effective update is defined as the most recent Tuesday at 23:59:59.
     function getEffectiveTuesdayUpdate(now) {
       let day = now.getDay(); // Sunday = 0, Monday = 1, Tuesday = 2, etc.
       let candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -88,67 +86,68 @@
       return candidate;
     }
 
-    // Get the current date and time.
-    const now = new Date();
-    // Compute the effective update time based on the current moment.
-    const effectiveUpdateTime = getEffectiveTuesdayUpdate(now);
+    // Array of abbreviated month names for custom date formatting.
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-    // Compute the reference update time based on startDate (set to 23:59:59 on that day).
+    // Base time measurement.
+    const msPerWeek = 1000 * 60 * 60 * 24 * 7;
+    const now = new Date();
+
+    // ------------------------------
+    // First Wheel: Weekly (4 groups)
+    // ------------------------------
+    const members = [
+      "Yuan Shibo, Tommy, Nathan", 
+      "Evan, Huang Junkun, Chen Haoxuan",
+      "Lyu Weitao, Sun Jialin, Cao Yujie", 
+      "Zhuang Zi, Quan Feiyu, Tian Yuxiang"
+    ];
+
+    // Set reference start date for weekly wheel.
+    // In this example, Tuesday, February 18, 2025 at 10:00AM (effective at 23:59:59 on that day).
+    const startDate = new Date("2025-02-18T10:00:00");
     const refUpdateTime = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
     refUpdateTime.setHours(23, 59, 59, 0);
 
-    // Compute the number of full weeks passed between the reference update time and the effective update time.
+    // Calculate effective update time and number of weeks passed.
+    const effectiveUpdateTime = getEffectiveTuesdayUpdate(now);
     let weekDiff = Math.floor((effectiveUpdateTime - refUpdateTime) / msPerWeek);
 
-    // Calculate the meeting update time (i.e., the pivot Tuesday 23:59:59 for this meeting turn).
+    // Calculate meeting update time.
     let meetingUpdateTime = new Date(refUpdateTime.getTime() + weekDiff * msPerWeek);
 
-    /* 
-      Define an array containing Tuesday dates (in "YYYY-MM-DD" format) representing holidays.
-      If a computed meeting update day matches one of these dates, skip to the next week.
-    */
+    // Holiday Tuesdays (if the meeting update day falls on a holiday, skip to next week).
     const holidayTuesdays = [
       "2529-02-25", // (holiday example)
       "2529-03-04"  // (holiday example)
     ];
-
-    // Check whether the computed meeting update day falls on a holiday.
     while (holidayTuesdays.includes(meetingUpdateTime.toISOString().substring(0, 10))) {
       weekDiff++;
       meetingUpdateTime = new Date(refUpdateTime.getTime() + weekDiff * msPerWeek);
     }
 
-    // Determine the current meeting turn's group.
+    // Determine current group's index.
     const currentIndex = ((weekDiff % members.length) + members.length) % members.length;
     const currentMember = members[currentIndex];
 
-    // Format the meeting update time into a human-readable string (if needed elsewhere).
+    // Next update time.
+    let nextUpdateTime = new Date(meetingUpdateTime.getTime() + msPerWeek);
     const options = { 
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
       hour: '2-digit', minute: '2-digit', second: '2-digit'
     };
-    const meetingUpdateTimeString = meetingUpdateTime.toLocaleDateString("en-US", options);
-
-    // Calculate the next update time (i.e. the following Tuesday at 23:59:59).
-    let nextUpdateTime = new Date(meetingUpdateTime.getTime() + msPerWeek);
     const nextUpdateTimeString = nextUpdateTime.toLocaleDateString("en-US", options);
-
-    // Create an array of abbreviated month names.
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    // Format the next update date (e.g., "Feb 25 2025").
+    // Format the next update date as "Feb 25 2025", for example.
     const formattedNextUpdate = monthNames[nextUpdateTime.getMonth()] + " " +
                                 nextUpdateTime.getDate() + " " +
                                 nextUpdateTime.getFullYear();
 
-    // Update the DOM elements:
-    // Now displaying the formatted date so that the month shows as "Feb" rather than a numeric value.
+    // Update DOM elements for weekly wheel.
     document.getElementById("currentMember").innerText =
       "This next speakers' turn (" + formattedNextUpdate + "): " + currentMember;
-      
     
-    // ------------------------------
-    // Draw the meeting wheel on the canvas.
-    // ------------------------------
+
+    // Draw the weekly meeting wheel.
     const canvas = document.getElementById("wheelCanvas");
     const ctx = canvas.getContext("2d");
     const centerX = canvas.width / 2;
@@ -156,17 +155,14 @@
     const radius = Math.min(centerX, centerY) - 20;
     const numSegments = members.length;
     const segmentAngle = 2 * Math.PI / numSegments;
-    // Base colors for the segments.
     const colors = ["#FF6384", "#36A2EB", "#FFCE56", "#8BC34A", "#FF9800"];
 
-    // Draw each segment of the wheel.
     for (let i = 0; i < numSegments; i++) {
       const startAngle = i * segmentAngle;
       const endAngle = startAngle + segmentAngle;
-      // Calculate the middle angle for this segment.
       const midAngle = startAngle + segmentAngle / 2;
   
-      // Create a gradient from the center to the outer edge.
+      // Create a gradient fill for each segment.
       const innerX = centerX;
       const innerY = centerY;
       const outerX = centerX + radius * Math.cos(midAngle);
@@ -176,7 +172,6 @@
       gradient.addColorStop(0, "white");
       gradient.addColorStop(1, baseColor);
       
-      // Draw the segment.
       ctx.beginPath();
       ctx.moveTo(centerX, centerY);
       ctx.arc(centerX, centerY, radius, startAngle, endAngle);
@@ -184,8 +179,7 @@
       ctx.fillStyle = gradient;
       ctx.fill();
 
-      // If this segment corresponds to the current meeting turn,
-      // highlight it with a red stroke and shadow.
+      // Highlight the current group's segment with a red stroke and shadow.
       if (i === currentIndex) {
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.6)";
@@ -196,15 +190,13 @@
         ctx.restore();
       }
       
-      // Calculate the position for the text label within the segment.
+      // Draw the group's names inside the segment.
       const textX = centerX + (radius / 2) * Math.cos(midAngle);
       const textY = centerY + (radius / 2) * Math.sin(midAngle);
       
-      // Split the group names by comma and trim any extra whitespace.
+      // Split names (if more than one) and display them on separate lines.
       let names = members[i].split(",").map(name => name.trim());
-      const lineHeight = 18; // Adjust spacing between lines if needed.
-      
-      // Center the block of names vertically.
+      const lineHeight = 18;
       const totalHeight = names.length * lineHeight;
       const startLineY = textY - totalHeight / 2 + lineHeight / 2;
       
@@ -215,6 +207,95 @@
       names.forEach((name, index) => {
         ctx.fillText(name, textX, startLineY + index * lineHeight);
       });
+    }
+
+    // ------------------------------
+    // Second Wheel: Biweekly (12 members)
+    // ------------------------------
+    const biweekMembers = [
+      "Yuan Shibo", "Sun Jialin", "Evan", "Lyu Weitao", "Nathan", "Huang Junkun", 
+      "Tommy", "Zhuang Zi", "Quan Feiyu"
+    ];
+    // Reference start date (using the same reference as the first wheel)
+    const biweekStartDate = new Date("2025-02-18T10:00:00");
+    const biweekRefTime = new Date(biweekStartDate.getFullYear(), biweekStartDate.getMonth(), biweekStartDate.getDate());
+    biweekRefTime.setHours(23, 59, 59, 0);
+
+    // Two-week interval in milliseconds.
+    const twoWeeks = msPerWeek * 2;
+    // Get the effective update time for the current moment (still based on Tuesday 23:59:59).
+    const biweekEffectiveUpdateTime = getEffectiveTuesdayUpdate(now);
+    
+    // Number of two-week intervals passed between the reference update time and effective update time.
+    let biweekDiff = Math.floor((biweekEffectiveUpdateTime - biweekRefTime) / twoWeeks);
+    
+    // Compute the meeting update time for the biweekly wheel.
+    let biweekMeetingUpdateTime = new Date(biweekRefTime.getTime() + biweekDiff * twoWeeks);
+    
+    // Determine the current member.
+    const biweekCurrentIndex = ((biweekDiff % biweekMembers.length) + biweekMembers.length) % biweekMembers.length;
+    const biweekCurrentMember = biweekMembers[biweekCurrentIndex];
+    
+    // Next update time for the biweekly wheel.
+    let nextBiweekUpdateTime = new Date(biweekMeetingUpdateTime.getTime() + twoWeeks);
+    const formattedBiweekNextUpdate = monthNames[nextBiweekUpdateTime.getMonth()] + " " +
+                                      nextBiweekUpdateTime.getDate() + " " +
+                                      nextBiweekUpdateTime.getFullYear();
+    
+    // Update DOM elements for the biweekly wheel.
+    document.getElementById("biweekCurrentMember").innerText =
+          "This next speakers' turn (" + formattedBiweekNextUpdate + "): " + biweekCurrentMember;
+    
+    
+    // Draw the biweekly meeting wheel.
+    const biweekCanvas = document.getElementById("biweekWheelCanvas");
+    const ctx2 = biweekCanvas.getContext("2d");
+    const centerX2 = biweekCanvas.width / 2;
+    const centerY2 = biweekCanvas.height / 2;
+    const radius2 = Math.min(centerX2, centerY2) - 20;
+    const numSegments2 = biweekMembers.length;
+    const segmentAngle2 = 2 * Math.PI / numSegments2;
+    
+    for (let i = 0; i < numSegments2; i++) {
+      const startAngle = i * segmentAngle2;
+      const endAngle = startAngle + segmentAngle2;
+      const midAngle = startAngle + segmentAngle2 / 2;
+      
+      const innerX2 = centerX2;
+      const innerY2 = centerY2;
+      const outerX2 = centerX2 + radius2 * Math.cos(midAngle);
+      const outerY2 = centerY2 + radius2 * Math.sin(midAngle);
+      let gradient2 = ctx2.createLinearGradient(innerX2, innerY2, outerX2, outerY2);
+      let baseColor = colors[i % colors.length];
+      gradient2.addColorStop(0, "white");
+      gradient2.addColorStop(1, baseColor);
+      
+      ctx2.beginPath();
+      ctx2.moveTo(centerX2, centerY2);
+      ctx2.arc(centerX2, centerY2, radius2, startAngle, endAngle);
+      ctx2.closePath();
+      ctx2.fillStyle = gradient2;
+      ctx2.fill();
+      
+      // Highlight the current member.
+      if (i === biweekCurrentIndex) {
+        ctx2.save();
+        ctx2.shadowColor = "rgba(0,0,0,0.6)";
+        ctx2.shadowBlur = 10;
+        ctx2.lineWidth = 8;
+        ctx2.strokeStyle = "#FF0000";
+        ctx2.stroke();
+        ctx2.restore();
+      }
+      
+      // Draw the member's name.
+      const textX2 = centerX2 + (radius2 / 2) * Math.cos(midAngle);
+      const textY2 = centerY2 + (radius2 / 2) * Math.sin(midAngle);
+      ctx2.fillStyle = "#000000";
+      ctx2.font = "16px Arial";
+      ctx2.textAlign = "center";
+      ctx2.textBaseline = "middle";
+      ctx2.fillText(biweekMembers[i], textX2, textY2);
     }
   </script>
 </body>
