@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Group Meeting Wheel</title>
+  <title>Meeting Turn and Next Update at Tue 23:59:59</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -19,17 +19,15 @@
       background-color: #fff;
       padding: 20px;
       margin-top: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       border-radius: 8px;
       text-align: center;
     }
     h1 {
       margin-bottom: 10px;
     }
-    #currentMember {
-      font-size: 1.2em;
-      margin-top: 20px;
-      color: #333;
+    p {
+      margin: 10px 0;
     }
     canvas {
       max-width: 100%;
@@ -42,34 +40,106 @@
     <h1>Group Meeting Wheel</h1>
     <canvas id="wheelCanvas" width="400" height="400"></canvas>
     <p id="currentMember"></p>
+    <p id="nextUpdateDate"></p>
     <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
-      The wheel updates weekly based on a fixed start date.
+      The meeting turn updates every Tuesday at 23:59:59 (postponed if it’s a holiday).
     </p>
   </div>
 
   <script>
-    // List of members (modify as needed)
-    const members = ["Alice", "Bob", "Charlie", "Dana", "Eve"];
+    // List of groups (speakers) as members.
+    // Each group is a comma-separated list of names.
+    const members = ["Yuan Shibo, Tommy, Nathan", 
+      "Evan, Huang Junkun, Chen Haoxuan",
+      "Lyu Weitao, Sun Jialin, Cao Yujie", 
+      "Zhuang Zi, Quan Feiyu, Tian Yuxiang"
+      
+    ];
 
-    // Set a reference start date (e.g., the date of the first meeting)
-    // Adjust this date based on when the rotation starts.
-    const startDate = new Date("2025-02-20"); 
+    /* 
+      Set your reference start date.
+      In this example, the reference is Tuesday, February 18, 2025 at 10:00 AM.
+      We want the meeting update to be effective on that same day at 23:59:59.
+    */
+    const startDate = new Date("2025-02-18T10:00:00");
 
-    // Get today's date
-    const today = new Date();
-
-    // Calculate the number of weeks passed since the startDate
+    // Define the number of milliseconds in one week.
     const msPerWeek = 1000 * 60 * 60 * 24 * 7;
-    const weekDiff = Math.floor((today - startDate) / msPerWeek);
-    
-    // Determine the current member index by cycling through the members array
+
+    // Helper function:
+    // Returns the effective Tuesday update for a given date.
+    // The effective Tuesday update is the most recent Tuesday at 23:59:59.
+    function getEffectiveTuesdayUpdate(now) {
+      let day = now.getDay(); // Sunday = 0, Monday = 1, Tuesday = 2, etc.
+      let candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      if (day >= 2) {
+        // If today is Tuesday or later in the week, candidate date is Tuesday of this week.
+        candidate.setDate(now.getDate() - (day - 2));
+      } else {
+        // If today is Sunday or Monday, candidate is Tuesday of last week.
+        candidate.setDate(now.getDate() - (day + 5));
+      }
+      candidate.setHours(23, 59, 59, 0);
+      
+      // Special case: if today is Tuesday but before 23:59:59, roll back to previous week's update.
+      if (now.getDay() === 2 && now < candidate) {
+        candidate.setDate(candidate.getDate() - 7);
+      }
+      return candidate;
+    }
+
+    // Get the current date and time.
+    const now = new Date();
+    // Compute the effective update time based on the current moment.
+    const effectiveUpdateTime = getEffectiveTuesdayUpdate(now);
+
+    // Compute the reference update time based on startDate.
+    // Here we want to treat the reference as the same day as startDate but at 23:59:59.
+    const refUpdateTime = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    refUpdateTime.setHours(23, 59, 59, 0);
+
+    // Compute the number of full weeks passed between the reference update time and the effective update time.
+    let weekDiff = Math.floor((effectiveUpdateTime - refUpdateTime) / msPerWeek);
+
+    // Calculate the meeting update time (i.e., the pivot Tuesday 23:59:59 for this meeting turn).
+    let meetingUpdateTime = new Date(refUpdateTime.getTime() + weekDiff * msPerWeek);
+
+    /* 
+      Define an array containing Tuesday dates (in "YYYY-MM-DD" format) representing holidays.
+      If a computed meeting update day matches one of these dates, skip to the next week.
+    */
+    const holidayTuesdays = [
+      "2025-02-25", // Tuesday, Feb 25, 2025 (holiday example)
+      "2025-03-04"  // Tuesday, Mar 4, 2025 (holiday example)
+    ];
+
+    // Check whether the computed meeting update day falls on a holiday.
+    while (holidayTuesdays.includes(meetingUpdateTime.toISOString().substring(0, 10))) {
+      weekDiff++;
+      meetingUpdateTime = new Date(refUpdateTime.getTime() + weekDiff * msPerWeek);
+    }
+
+    // Determine the current meeting turn's group.
     const currentIndex = ((weekDiff % members.length) + members.length) % members.length;
     const currentMember = members[currentIndex];
 
-    // Display the current member's turn
-    document.getElementById("currentMember").innerText = "This week's turn: " + currentMember;
+    // Format the meeting update time into a human-readable string.
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit', second:'2-digit' };
+    const meetingUpdateTimeString = meetingUpdateTime.toLocaleDateString("en-US", options);
 
-    // Set up the canvas for drawing the wheel
+    // Calculate the next update time (i.e. the following Tuesday at 23:59:59).
+    let nextUpdateTime = new Date(meetingUpdateTime.getTime() + msPerWeek);
+    const nextUpdateTimeString = nextUpdateTime.toLocaleDateString("en-US", options);
+
+    // Update the DOM elements:
+    document.getElementById("currentMember").innerText =
+      "This next speakers' turn (February, " + nextUpdateTimeString.getDate() + "): " + currentMember;
+      
+    
+
+    // ------------------------------
+    // Draw the meeting wheel on the canvas.
+    // ------------------------------
     const canvas = document.getElementById("wheelCanvas");
     const ctx = canvas.getContext("2d");
     const centerX = canvas.width / 2;
@@ -77,51 +147,66 @@
     const radius = Math.min(centerX, centerY) - 20;
     const numSegments = members.length;
     const segmentAngle = 2 * Math.PI / numSegments;
-
-    // Define an array of colors for the segments (customize as needed)
+    // Base colors for the segments.
     const colors = ["#FF6384", "#36A2EB", "#FFCE56", "#8BC34A", "#FF9800"];
 
-    // Draw each segment of the wheel
+    // Draw each segment of the wheel.
     for (let i = 0; i < numSegments; i++) {
       const startAngle = i * segmentAngle;
       const endAngle = startAngle + segmentAngle;
-
-      // Draw the segment
+      // Calculate the middle angle for this segment.
+      const midAngle = startAngle + segmentAngle / 2;
+  
+      // Create a gradient from the center to the outer edge.
+      const innerX = centerX;
+      const innerY = centerY;
+      const outerX = centerX + radius * Math.cos(midAngle);
+      const outerY = centerY + radius * Math.sin(midAngle);
+      let gradient = ctx.createLinearGradient(innerX, innerY, outerX, outerY);
+      let baseColor = colors[i % colors.length];
+      gradient.addColorStop(0, "white");
+      gradient.addColorStop(1, baseColor);
+      
+      // Draw the segment.
       ctx.beginPath();
       ctx.moveTo(centerX, centerY);
-      ctx.arc(centerX, centerY, radius, startAngle, endAngle, false);
+      ctx.arc(centerX, centerY, radius, startAngle, endAngle);
       ctx.closePath();
-      ctx.fillStyle = colors[i % colors.length];
+      ctx.fillStyle = gradient;
       ctx.fill();
 
-      // If this segment is the current member, add a thick stroke to highlight it.
-      if(i === currentIndex) {
-        ctx.lineWidth = 5;
-        ctx.strokeStyle = "#000000";
+      // If this segment corresponds to the current meeting turn,
+      // highlight it with a red stroke and shadow.
+      if (i === currentIndex) {
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.6)";
+        ctx.shadowBlur = 10;
+        ctx.lineWidth = 8;
+        ctx.strokeStyle = "#FF0000";
         ctx.stroke();
+        ctx.restore();
       }
-
-      // Calculate the position for the text label
-      const midAngle = startAngle + segmentAngle / 2;
+      
+      // Calculate the position for the text label within the segment.
       const textX = centerX + (radius / 2) * Math.cos(midAngle);
       const textY = centerY + (radius / 2) * Math.sin(midAngle);
       
-      // Draw the member's name on the segment.
-      ctx.fillStyle = "#ffffff";
+      // Split the group names by comma and trim any extra whitespace.
+      let names = members[i].split(",").map(name => name.trim());
+      const lineHeight = 18; // can adjust spacing between lines
+      
+      // Center the block of names vertically.
+      const totalHeight = names.length * lineHeight;
+      const startLineY = textY - totalHeight / 2 + lineHeight / 2;
+      
+      ctx.fillStyle = "#000000";
       ctx.font = "16px Arial";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(members[i], textX, textY);
+      names.forEach((name, index) => {
+        ctx.fillText(name, textX, startLineY + index * lineHeight);
+      });
     }
-
-    // Draw an arrow pointer at the top center of the canvas to indicate the active segment.
-    ctx.fillStyle = "#000";
-    ctx.beginPath();
-    ctx.moveTo(centerX - 10, 10);
-    ctx.lineTo(centerX + 10, 10);
-    ctx.lineTo(centerX, 30);
-    ctx.closePath();
-    ctx.fill();
   </script>
 </body>
 </html>
