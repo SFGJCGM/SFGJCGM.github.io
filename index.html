@@ -49,11 +49,11 @@
   <script>
     // List of groups (speakers) as members.
     // Each group is a comma-separated list of names.
-    const members = ["Yuan Shibo, Tommy, Nathan", 
+    const members = [
+      "Yuan Shibo, Tommy, Nathan", 
       "Evan, Huang Junkun, Chen Haoxuan",
       "Lyu Weitao, Sun Jialin, Cao Yujie", 
       "Zhuang Zi, Quan Feiyu, Tian Yuxiang"
-      
     ];
 
     /* 
@@ -93,8 +93,7 @@
     // Compute the effective update time based on the current moment.
     const effectiveUpdateTime = getEffectiveTuesdayUpdate(now);
 
-    // Compute the reference update time based on startDate.
-    // Here we want to treat the reference as the same day as startDate but at 23:59:59.
+    // Compute the reference update time based on startDate (set to 23:59:59 on that day).
     const refUpdateTime = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
     refUpdateTime.setHours(23, 59, 59, 0);
 
@@ -123,8 +122,11 @@
     const currentIndex = ((weekDiff % members.length) + members.length) % members.length;
     const currentMember = members[currentIndex];
 
-    // Format the meeting update time into a human-readable string.
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit', second:'2-digit' };
+    // Format the meeting update time into a human-readable string (if needed elsewhere).
+    const options = { 
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    };
     const meetingUpdateTimeString = meetingUpdateTime.toLocaleDateString("en-US", options);
 
     // Calculate the next update time (i.e. the following Tuesday at 23:59:59).
@@ -132,10 +134,11 @@
     const nextUpdateTimeString = nextUpdateTime.toLocaleDateString("en-US", options);
 
     // Update the DOM elements:
+    // Here we display only the day (day of the month) from the next update time.
     document.getElementById("currentMember").innerText =
-      "This next speakers' turn (February, " + nextUpdateTimeString.getDate() + "): " + currentMember;
+      "This next speakers' turn (on day " + nextUpdateTime.getMonth()+nextUpdateTime.getDate()+nextUpdateTime.getFullYear() + "): " + currentMember;
       
-    
+
 
     // ------------------------------
     // Draw the meeting wheel on the canvas.
@@ -193,7 +196,7 @@
       
       // Split the group names by comma and trim any extra whitespace.
       let names = members[i].split(",").map(name => name.trim());
-      const lineHeight = 18; // can adjust spacing between lines
+      const lineHeight = 18; // Adjust spacing between lines if needed.
       
       // Center the block of names vertically.
       const totalHeight = names.length * lineHeight;
