@@ -136,9 +136,10 @@
     // Update the DOM elements:
     // Here we display only the day (day of the month) from the next update time.
     document.getElementById("currentMember").innerText =
-      "This next speakers' turn (on day " + nextUpdateTime.getMonth()+nextUpdateTime.getDate()+nextUpdateTime.getFullYear() + "): " + currentMember;
+      "This next speakers' turn ( " +nextUpdateTime.getMonth() + nextUpdateTime.getDate() + nextUpdateTime.getFullYear()+"): " + currentMember;
       
-
+    document.getElementById("nextUpdateDate").innerText =
+      "Next meeting update is on: " + nextUpdateTimeString;
 
     // ------------------------------
     // Draw the meeting wheel on the canvas.
