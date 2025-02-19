@@ -169,7 +169,7 @@
       const outerY = centerY + radius * Math.sin(midAngle);
       let gradient = ctx.createLinearGradient(innerX, innerY, outerX, outerY);
       let baseColor = colors[i % colors.length];
-      gradient.addColorStop(0, "white");
+      gradient.addColorStop(0, "cyan");
       gradient.addColorStop(1, baseColor);
       
       ctx.beginPath();
@@ -214,7 +214,7 @@
     // ------------------------------
     const biweekMembers = [
       "Yuan Shibo", "Sun Jialin", "Evan", "Lyu Weitao", "Nathan", "Huang Junkun", 
-      "Tommy", "Zhuang Zi", "Quan Feiyu"
+      "Tommy", "Zhuang Zi", "Quan Feiyu", "Tian Yuxiang", "Chen Haoxuan"
     ];
     // Reference start date (using the same reference as the first wheel)
     const biweekStartDate = new Date("2025-02-18T10:00:00");
@@ -267,7 +267,7 @@
       const outerY2 = centerY2 + radius2 * Math.sin(midAngle);
       let gradient2 = ctx2.createLinearGradient(innerX2, innerY2, outerX2, outerY2);
       let baseColor = colors[i % colors.length];
-      gradient2.addColorStop(0, "white");
+      gradient2.addColorStop(0, "cyan");
       gradient2.addColorStop(1, baseColor);
       
       ctx2.beginPath();
