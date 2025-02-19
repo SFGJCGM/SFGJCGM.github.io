@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Group Meeting Wheel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      max-width: 500px;
+      background-color: #fff;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    #currentMember {
+      font-size: 1.2em;
+      margin-top: 20px;
+      color: #333;
+    }
+    canvas {
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Group Meeting Wheel</h1>
+    <canvas id="wheelCanvas" width="400" height="400"></canvas>
+    <p id="currentMember"></p>
+    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+      The wheel updates weekly based on a fixed start date.
+    </p>
+  </div>
+
+  <script>
+    // List of members (modify as needed)
+    const members = ["Alice", "Bob", "Charlie", "Dana", "Eve"];
+
+    // Set a reference start date (e.g., the date of the first meeting)
+    // Adjust this date based on when the rotation starts.
+    const startDate = new Date("2025-02-20"); 
+
+    // Get today's date
+    const today = new Date();
+
+    // Calculate the number of weeks passed since the startDate
+    const msPerWeek = 1000 * 60 * 60 * 24 * 7;
+    const weekDiff = Math.floor((today - startDate) / msPerWeek);
+    
+    // Determine the current member index by cycling through the members array
+    const currentIndex = ((weekDiff % members.length) + members.length) % members.length;
+    const currentMember = members[currentIndex];
+
+    // Display the current member's turn
+    document.getElementById("currentMember").innerText = "This week's turn: " + currentMember;
+
+    // Set up the canvas for drawing the wheel
+    const canvas = document.getElementById("wheelCanvas");
+    const ctx = canvas.getContext("2d");
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(centerX, centerY) - 20;
+    const numSegments = members.length;
+    const segmentAngle = 2 * Math.PI / numSegments;
+
+    // Define an array of colors for the segments (customize as needed)
+    const colors = ["#FF6384", "#36A2EB", "#FFCE56", "#8BC34A", "#FF9800"];
+
+    // Draw each segment of the wheel
+    for (let i = 0; i < numSegments; i++) {
+      const startAngle = i * segmentAngle;
+      const endAngle = startAngle + segmentAngle;
+
+      // Draw the segment
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius, startAngle, endAngle, false);
+      ctx.closePath();
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fill();
+
+      // If this segment is the current member, add a thick stroke to highlight it.
+      if(i === currentIndex) {
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = "#000000";
+        ctx.stroke();
+      }
+
+      // Calculate the position for the text label
+      const midAngle = startAngle + segmentAngle / 2;
+      const textX = centerX + (radius / 2) * Math.cos(midAngle);
+      const textY = centerY + (radius / 2) * Math.sin(midAngle);
+      
+      // Draw the member's name on the segment.
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "16px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(members[i], textX, textY);
+    }
+
+    // Draw an arrow pointer at the top center of the canvas to indicate the active segment.
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.moveTo(centerX - 10, 10);
+    ctx.lineTo(centerX + 10, 10);
+    ctx.lineTo(centerX, 30);
+    ctx.closePath();
+    ctx.fill();
+  </script>
+</body>
+</html>
