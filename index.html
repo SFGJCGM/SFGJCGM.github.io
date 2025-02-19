@@ -42,7 +42,7 @@
     <p id="currentMember"></p>
     <p id="nextUpdateDate"></p>
     <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
-      The meeting turn updates every Tuesday at 23:59:59 (postponed if it's a holiday).
+      The meeting turn updates every Tuesday at 23:59:59 (postponed if it’s a holiday).
     </p>
   </div>
 
@@ -108,8 +108,8 @@
       If a computed meeting update day matches one of these dates, skip to the next week.
     */
     const holidayTuesdays = [
-      "2028-02-25", 
-      "2028-03-04"  
+      "2529-02-25", // (holiday example)
+      "2529-03-04"  // (holiday example)
     ];
 
     // Check whether the computed meeting update day falls on a holiday.
@@ -133,13 +133,19 @@
     let nextUpdateTime = new Date(meetingUpdateTime.getTime() + msPerWeek);
     const nextUpdateTimeString = nextUpdateTime.toLocaleDateString("en-US", options);
 
-    // Update the DOM elements:
-    // Here we display only the day (day of the month) from the next update time.
-    document.getElementById("currentMember").innerText =
-      "This next speakers' turn ( " +nextUpdateTime.getMonth()+" " + nextUpdateTime.getDate()+" " + nextUpdateTime.getFullYear()+"): " + currentMember;
-      
-   
+    // Create an array of abbreviated month names.
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    // Format the next update date (e.g., "Feb 25 2025").
+    const formattedNextUpdate = monthNames[nextUpdateTime.getMonth()] + " " +
+                                nextUpdateTime.getDate() + " " +
+                                nextUpdateTime.getFullYear();
 
+    // Update the DOM elements:
+    // Now displaying the formatted date so that the month shows as "Feb" rather than a numeric value.
+    document.getElementById("currentMember").innerText =
+      "This next speakers' turn (" + formattedNextUpdate + "): " + currentMember;
+      
+    
     // ------------------------------
     // Draw the meeting wheel on the canvas.
     // ------------------------------
