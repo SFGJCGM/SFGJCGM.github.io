@@ -117,11 +117,12 @@
     let meetingUpdateTime = new Date(refUpdateTime.getTime() + weekDiff * msPerWeek);
 
     // Holiday Tuesdays (if the meeting update day falls on a holiday, skip to next week).
-    const holidayTuesdays = [
+    const GMholidayTuesdays = [
       "2529-02-25", // (holiday example)
       "2529-03-04"  // (holiday example)
     ];
-    while (holidayTuesdays.includes(meetingUpdateTime.toISOString().substring(0, 10))) {
+   
+    while (GMholidayTuesdays.includes(meetingUpdateTime.toISOString().substring(0, 10))) {
       weekDiff++;
       meetingUpdateTime = new Date(refUpdateTime.getTime() + weekDiff * msPerWeek);
     }
@@ -231,7 +232,16 @@
     
     // Compute the meeting update time for the biweekly wheel.
     let biweekMeetingUpdateTime = new Date(biweekRefTime.getTime() + biweekDiff * twoWeeks);
-    
+    const JCholidayTuesdays = [
+      "2529-02-25", // (holiday example)
+      "2529-03-04",
+      "2025-03-11"// (holiday example)
+    ];
+    while (JCholidayTuesdays.includes(biweekMeetingUpdateTime.toISOString().substring(0, 10))) {
+      biweekDiff++;
+      biweekMeetingUpdateTime = new Date(refUpdateTime.getTime() + biweekDiff * msPerWeek);
+    }
+
     // Determine the current member.
     const biweekCurrentIndex = ((biweekDiff % biweekMembers.length) + biweekMembers.length) % biweekMembers.length;
     const biweekCurrentMember = biweekMembers[biweekCurrentIndex];
