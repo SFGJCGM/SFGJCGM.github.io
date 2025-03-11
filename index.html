@@ -234,8 +234,7 @@
     let biweekMeetingUpdateTime = new Date(biweekRefTime.getTime() + biweekDiff * twoWeeks);
     const JCholidayTuesdays = [
       "2529-02-25", // (holiday example)
-      "2529-03-04",
-      "2025-03-11"// (holiday example)
+      "2529-03-04"// (holiday example)
     ];
     while (JCholidayTuesdays.includes(biweekMeetingUpdateTime.toISOString().substring(0, 10))) {
       biweekDiff++;
