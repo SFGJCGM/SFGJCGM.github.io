@@ -40,7 +40,7 @@
 <body>
   <!-- Weekly Meeting Wheel (4 groups) -->
   <div class="container">
-    <h1>Group Meeting Wheel (Weekly)</h1>
+    <h1>Group Meeting Wheel</h1>
     <canvas id="wheelCanvas" width="400" height="400"></canvas>
     <p id="currentMember"></p>
     <p id="nextUpdateDate"></p>
@@ -51,15 +51,26 @@
 
   <!-- Biweekly Meeting Wheel (12 members) -->
   <div class="container">
-    <h1>Journal Club Wheel</h1>
+    <h1>Journal Club Wheel </h1>
     <canvas id="biweekWheelCanvas" width="800" height="800"></canvas>
     <p id="biweekCurrentMember"></p>
     <p id="biweekNextUpdateDate"></p>
     <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
-      The meeting turn updates every two weeks on Tuesday at 23:59:59.
+      The meeting turn updates every two weeks on Tuesday at 23:59:59 (postponed if it’s a holiday).
     </p>
   </div>
-
+  
+  <!-- Bimonthly Meeting Wheel (every 8 weeks on Friday) -->
+  <div class="container">
+    <h1>CUHK-NIU Joint Meeting Wheel</h1>
+    <canvas id="biMonthWheelCanvas" width="600" height="600"></canvas>
+    <p id="biMonthCurrentMember"></p>
+    <p id="biMonthNextUpdateDate"></p>
+    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+      The meeting turn updates every 8 weeks on Friday at 23:59:59 (postponed if it’s a holiday).
+    </p>
+  </div>
+ 
   <script>
     // ------------------------------
     // Shared Helper and Variables
@@ -147,7 +158,6 @@
     document.getElementById("currentMember").innerText =
       "This next speakers' turn (" + formattedNextUpdate + "): " + currentMember;
     
-
     // Draw the weekly meeting wheel.
     const canvas = document.getElementById("wheelCanvas");
     const ctx = canvas.getContext("2d");
@@ -234,7 +244,7 @@
     let biweekMeetingUpdateTime = new Date(biweekRefTime.getTime() + biweekDiff * twoWeeks);
     const JCholidayTuesdays = [
       "2529-02-25", // (holiday example)
-      "2529-03-04"// (holiday example)
+      "2529-03-04"  // (holiday example)
     ];
     while (JCholidayTuesdays.includes(biweekMeetingUpdateTime.toISOString().substring(0, 10))) {
       biweekDiff++;
@@ -254,7 +264,6 @@
     // Update DOM elements for the biweekly wheel.
     document.getElementById("biweekCurrentMember").innerText =
           "This next speakers' turn (" + formattedBiweekNextUpdate + "): " + biweekCurrentMember;
-    
     
     // Draw the biweekly meeting wheel.
     const biweekCanvas = document.getElementById("biweekWheelCanvas");
@@ -305,6 +314,128 @@
       ctx2.textAlign = "center";
       ctx2.textBaseline = "middle";
       ctx2.fillText(biweekMembers[i], textX2, textY2);
+    }
+
+    // ------------------------------
+    // Third Wheel: Bimonthly Meeting (every 8 weeks on Friday)
+    // ------------------------------
+
+    // Function to get the effective Friday update for a given date.
+    // Friday is represented by the index 5 (Sunday = 0, Monday = 1, ..., Friday = 5).
+    function getEffectiveFridayUpdate(now) {
+      let day = now.getDay();
+      let candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      if (day >= 5) {
+        // If today is Friday or later, candidate is this week's Friday.
+        candidate.setDate(now.getDate() - (day - 5));
+      } else {
+        // If today is before Friday (i.e. Saturday is 6, or Sunday (0) to Thursday (4)),
+        // then the most recent Friday is in the previous week.
+        candidate.setDate(now.getDate() - (day + 2));
+      }
+      candidate.setHours(23, 59, 59, 0);
+      // Special case: if today is Friday but before 23:59:59, roll back to last week's Friday.
+      if (now.getDay() === 5 && now < candidate) {
+        candidate.setDate(candidate.getDate() - 7);
+      }
+      return candidate;
+    }
+
+    // Define the members for the bimonthly (8-week) meeting.
+    const biMonthMembers = [
+      "SJL", "LWT", "To be determined", "TBD", "TBD", "TBD", "TBD","TBD",
+    ];
+
+    // Reference start date for the bimonthly wheel.
+    // In this example, Friday, February 21, 2025 at 10:00AM (effective at 23:59:59 on that day).
+    const biMonthStartDate = new Date("2025-02-28T10:00:00");
+    const biMonthRefTime = new Date(biMonthStartDate.getFullYear(), biMonthStartDate.getMonth(), biMonthStartDate.getDate());
+    biMonthRefTime.setHours(23, 59, 59, 0);
+
+    // 8-week interval in milliseconds.
+    const msPer8Weeks = msPerWeek * 8;
+
+    // Get the effective update time based on Friday.
+    const effectiveFridayUpdateTime = getEffectiveFridayUpdate(now);
+
+    // Number of 8-week intervals passed between the reference update time and the effective Friday update time.
+    let biMonthDiff = Math.floor((effectiveFridayUpdateTime - biMonthRefTime) / msPer8Weeks);
+
+    // Calculate the meeting update time for the bimonthly meeting.
+    let biMonthMeetingUpdateTime = new Date(biMonthRefTime.getTime() + biMonthDiff * msPer8Weeks);
+    // Bimonthly holiday Fridays (if the meeting update day falls on one of these holidays, skip to the next interval).
+    const biMonthHolidayFridays = [
+      "2529-03-07", // (holiday example)
+      "2529-04-04"  // (holiday example)
+    ];
+
+    while (biMonthHolidayFridays.includes(biMonthMeetingUpdateTime.toISOString().substring(0, 10))) {
+      biMonthDiff++;
+      biMonthMeetingUpdateTime = new Date(biMonthRefTime.getTime() + biMonthDiff * msPer8Weeks);
+    }
+    // Determine current member's index.
+    const biMonthIndex = ((biMonthDiff % biMonthMembers.length) + biMonthMembers.length) % biMonthMembers.length;
+    const biMonthCurrentMember = biMonthMembers[biMonthIndex];
+
+    // Calculate the next update time (after 8 weeks).
+    let nextBiMonthUpdateTime = new Date(biMonthMeetingUpdateTime.getTime() + msPer8Weeks);
+    const formattedBiMonthNextUpdate = monthNames[nextBiMonthUpdateTime.getMonth()] + " " +
+                                       nextBiMonthUpdateTime.getDate() + " " +
+                                       nextBiMonthUpdateTime.getFullYear();
+
+    // Update DOM elements for the bimonthly wheel.
+    document.getElementById("biMonthCurrentMember").innerText =
+      "This next speakers' turn (" + formattedBiMonthNextUpdate + "): " + biMonthCurrentMember;
+
+    // Draw the bimonthly meeting wheel.
+    const biMonthCanvas = document.getElementById("biMonthWheelCanvas");
+    const ctx3 = biMonthCanvas.getContext("2d");
+    const centerX3 = biMonthCanvas.width / 2;
+    const centerY3 = biMonthCanvas.height / 2;
+    const radius3 = Math.min(centerX3, centerY3) - 20;
+    const numSegments3 = biMonthMembers.length;
+    const segmentAngle3 = 2 * Math.PI / numSegments3;
+    
+    for (let i = 0; i < numSegments3; i++) {
+      const startAngle = i * segmentAngle3;
+      const endAngle = startAngle + segmentAngle3;
+      const midAngle = startAngle + segmentAngle3 / 2;
+      
+      const innerX3 = centerX3;
+      const innerY3 = centerY3;
+      const outerX3 = centerX3 + radius3 * Math.cos(midAngle);
+      const outerY3 = centerY3 + radius3 * Math.sin(midAngle);
+      let gradient3 = ctx3.createLinearGradient(innerX3, innerY3, outerX3, outerY3);
+      let baseColor = colors[i % colors.length];
+      gradient3.addColorStop(0, "purple");
+      gradient3.addColorStop(1, baseColor);
+      
+      ctx3.beginPath();
+      ctx3.moveTo(centerX3, centerY3);
+      ctx3.arc(centerX3, centerY3, radius3, startAngle, endAngle);
+      ctx3.closePath();
+      ctx3.fillStyle = gradient3;
+      ctx3.fill();
+
+      // Highlight the current member's segment.
+      if (i === biMonthIndex) {
+        ctx3.save();
+        ctx3.shadowColor = "rgba(0,0,0,0.6)";
+        ctx3.shadowBlur = 10;
+        ctx3.lineWidth = 8;
+        ctx3.strokeStyle = "#FF0000";
+        ctx3.stroke();
+        ctx3.restore();
+      }
+
+      // Draw the member's name.
+      const textX3 = centerX3 + (radius3 / 2) * Math.cos(midAngle);
+      const textY3 = centerY3 + (radius3 / 2) * Math.sin(midAngle);
+      ctx3.fillStyle = "#000000";
+      ctx3.font = "16px Arial";
+      ctx3.textAlign = "center";
+      ctx3.textBaseline = "middle";
+      ctx3.fillText(biMonthMembers[i], textX3, textY3);
     }
   </script>
 </body>
