@@ -380,10 +380,52 @@
 
     // Calculate the next update time (after 8 weeks).
     let nextBiMonthUpdateTime = new Date(biMonthMeetingUpdateTime.getTime() + msPer8Weeks);
+
+    // Add logic to ensure nextBiMonthUpdateTime is the last Friday of its month
+    function isLastFridayOfMonth(date) {
+      // Create a new date set to the first day of the next month
+      const nextMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+      // Go back to the last day of the current month
+      const lastDay = new Date(nextMonth - 1);
+      
+      // Find the last Friday by going backwards from the last day
+      let lastFriday = new Date(lastDay);
+      while (lastFriday.getDay() !== 5) { // 5 is Friday
+        lastFriday.setDate(lastFriday.getDate() - 1);
+      }
+      
+      // Compare if the given date is the last Friday
+      return date.getDate() === lastFriday.getDate();
+    }
+    
+    function getLastFridayOfMonth(year, month) {
+      // Get the last day of the month
+      const lastDay = new Date(year, month + 1, 0);
+      
+      // Find the last Friday by going backwards from the last day
+      let lastFriday = new Date(lastDay);
+      while (lastFriday.getDay() !== 5) { // 5 is Friday
+        lastFriday.setDate(lastFriday.getDate() - 1);
+      }
+      
+      // Set time to 23:59:59
+      lastFriday.setHours(23, 59, 59, 0);
+      return lastFriday;
+    }
+    
+    // Check if nextBiMonthUpdateTime is the last Friday, if not, adjust it
+    if (!isLastFridayOfMonth(nextBiMonthUpdateTime)) {
+      nextBiMonthUpdateTime = getLastFridayOfMonth(
+        nextBiMonthUpdateTime.getFullYear(), 
+        nextBiMonthUpdateTime.getMonth()
+      );
+    }
+    
     const formattedBiMonthNextUpdate = monthNames[nextBiMonthUpdateTime.getMonth()] + " " +
                                        nextBiMonthUpdateTime.getDate() + " " +
                                        nextBiMonthUpdateTime.getFullYear();
 
+    
     // Update DOM elements for the bimonthly wheel.
     document.getElementById("biMonthCurrentMember").innerText =
       "This next speakers' turn (" + formattedBiMonthNextUpdate + "): " + biMonthCurrentMember;
