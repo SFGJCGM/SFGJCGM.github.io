@@ -244,8 +244,8 @@
     // Compute the meeting update time for the biweekly wheel.
     let biweekMeetingUpdateTime = new Date(biweekRefTime.getTime() + biweekDiff * twoWeeks);
     const JCholidayTuesdays = [
-      "2529-02-25", // (holiday example)
-      "2529-03-04"  // (holiday example)
+      "2025-07-01", // (holiday example)
+      "2025-10-01"  // (holiday example)
     ];
     while (JCholidayTuesdays.includes(biweekMeetingUpdateTime.toISOString().substring(0, 10))) {
       biweekDiff++;
