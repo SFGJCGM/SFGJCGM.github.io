@@ -389,7 +389,7 @@
     // Determine the current member based on the number of meetings that have already occurred.
     // If no meeting has occurred yet, iteration will be 0, meaning the first member in the rotation.
     const currentMemberIndex = ((iteration - 1) % biMonthMembers.length + biMonthMembers.length) % biMonthMembers.length;
-    const currentMember = biMonthMembers[currentMemberIndex];
+    const biMonthCurrentMember = biMonthMembers[currentMemberIndex];
     
     // Format the next meeting date for display.
     const formattedNextMeetingDate = monthNames[nextMeetingDate.getMonth()] + " " +
