@@ -362,14 +362,6 @@
       return getLastFridayOfMonth(meetingYear, meetingMonth);
     }
     
-    /**
-     * (Optional) Checks whether a given date is on the last Friday of its month.
-     */
-    function isLastFridayOfMonth(date) {
-      const lastFriday = getLastFridayOfMonth(date.getFullYear(), date.getMonth());
-      return date.getDate() === lastFriday.getDate();
-    }
-    
     // --- Meeting Scheduling Logic ---
     
     // We'll determine the most recent meeting whose scheduled date is less than or equal to now.
@@ -432,7 +424,7 @@
       ctx3.fill();
 
       // Highlight the current member's segment.
-      if (i === biMonthIndex) {
+      if (i === currentMemberIndex) {
         ctx3.save();
         ctx3.shadowColor = "rgba(0,0,0,0.6)";
         ctx3.shadowBlur = 10;
