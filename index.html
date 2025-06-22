@@ -320,115 +320,95 @@
     // ------------------------------
     // Third Wheel: Bimonthly Meeting (last Friday of a month, every two month)
     // ------------------------------
-
-    // Function to get the effective Friday update for a given date.
-    // Friday is represented by the index 5 (Sunday = 0, Monday = 1, ..., Friday = 5).
-    function getEffectiveFridayUpdate(now) {
-      let day = now.getDay();
-      let candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      if (day >= 5) {
-        // If today is Friday or later, candidate is this week's Friday.
-        candidate.setDate(now.getDate() - (day - 5));
-      } else {
-        // If today is before Friday (i.e. Saturday is 6, or Sunday (0) to Thursday (4)),
-        // then the most recent Friday is in the previous week.
-        candidate.setDate(now.getDate() - (day + 2));
-      }
-      candidate.setHours(23, 59, 59, 0);
-      // Special case: if today is Friday but before 23:59:59, roll back to last week's Friday.
-      if (now.getDay() === 5 && now < candidate) {
-        candidate.setDate(candidate.getDate() - 7);
-      }
-      return candidate;
-    }
-
-    // Define the members for the bimonthly (8-week) meeting.
+    
+    // Assume these global definitions:
+    const now = new Date();
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000; // not used directly anymore but kept for reference
+    
+    // An array to format month names:
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+    
+    // Define the members for the bimonthly (every two months) meeting.
     const biMonthMembers = [
       "SJL", "CHX", "LWT", "QFY", "TXY", "ZZ", "To be determined", "TBD",
     ];
-
-    // Reference start date for the bimonthly wheel.
-    // In this example, Friday, February 21, 2025 at 10:00AM (effective at 23:59:59 on that day).
-    const biMonthStartDate = new Date("2025-02-28T10:00:00");
-    const biMonthRefTime = new Date(biMonthStartDate.getFullYear(), biMonthStartDate.getMonth(), biMonthStartDate.getDate());
-    biMonthRefTime.setHours(23, 59, 59, 0);
-
-    // 8-week interval in milliseconds.
-    const msPer8Weeks = msPerWeek * 8;
-
-    // Get the effective update time based on Friday.
-    const effectiveFridayUpdateTime = getEffectiveFridayUpdate(now);
-
-    // Number of 8-week intervals passed between the reference update time and the effective Friday update time.
-    let biMonthDiff = Math.floor((effectiveFridayUpdateTime - biMonthRefTime) / msPer8Weeks);
-
-    // Calculate the meeting update time for the bimonthly meeting.
-    let biMonthMeetingUpdateTime = new Date(biMonthRefTime.getTime() + biMonthDiff * msPer8Weeks);
-    // Bimonthly holiday Fridays (if the meeting update day falls on one of these holidays, skip to the next interval).
-    const biMonthHolidayFridays = [
-      "2529-03-07", // (holiday example)
-      "2529-04-04"  // (holiday example)
-    ];
-
-    while (biMonthHolidayFridays.includes(biMonthMeetingUpdateTime.toISOString().substring(0, 10))) {
-      biMonthDiff++;
-      biMonthMeetingUpdateTime = new Date(biMonthRefTime.getTime() + biMonthDiff * msPer8Weeks);
-    }
-    // Determine current member's index.
-    const biMonthIndex = ((biMonthDiff % biMonthMembers.length) + biMonthMembers.length) % biMonthMembers.length;
-    const biMonthCurrentMember = biMonthMembers[biMonthIndex];
-
-    // Calculate the next update time (after 8 weeks).
-    let nextBiMonthUpdateTime = new Date(biMonthMeetingUpdateTime.getTime() + msPer8Weeks);
-
-    // Add logic to ensure nextBiMonthUpdateTime is the last Friday of its month
-    function isLastFridayOfMonth(date) {
-      // Create a new date set to the first day of the next month
-      const nextMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
-      // Go back to the last day of the current month
-      const lastDay = new Date(nextMonth - 1);
-      
-      // Find the last Friday by going backwards from the last day
-      let lastFriday = new Date(lastDay);
-      while (lastFriday.getDay() !== 5) { // 5 is Friday
-        lastFriday.setDate(lastFriday.getDate() - 1);
-      }
-      
-      // Compare if the given date is the last Friday
-      return date.getDate() === lastFriday.getDate();
-    }
     
+    // --- Helper Functions ---
+    
+    /**
+     * Returns a Date object set to the last Friday of the specified month and year.
+     * The returned date’s time is set to 23:59:59.
+     */
     function getLastFridayOfMonth(year, month) {
-      // Get the last day of the month
+      // Create a Date object for the last day of the month.
+      // Note: setting day to 0 in the next month gives us the last day of the desired month.
       const lastDay = new Date(year, month + 1, 0);
-      
-      // Find the last Friday by going backwards from the last day
+      // Find the last Friday by stepping back until the day-of-week equals 5.
       let lastFriday = new Date(lastDay);
-      while (lastFriday.getDay() !== 5) { // 5 is Friday
+      while (lastFriday.getDay() !== 5) { // 5 represents Friday
         lastFriday.setDate(lastFriday.getDate() - 1);
       }
-      
-      // Set time to 23:59:59
       lastFriday.setHours(23, 59, 59, 0);
       return lastFriday;
     }
     
-    // Check if nextBiMonthUpdateTime is the last Friday, if not, adjust it
-    if (!isLastFridayOfMonth(nextBiMonthUpdateTime)) {
-      nextBiMonthUpdateTime = getLastFridayOfMonth(
-        nextBiMonthUpdateTime.getFullYear(), 
-        nextBiMonthUpdateTime.getMonth()
-      );
+    /**
+     * Given an iteration number (starting at 0), returns the meeting date.
+     * Iteration 0 corresponds to the meeting on the last Friday of February 2025.
+     * Every iteration adds 2 months.
+     */
+    function getMeetingDateForIteration(iteration) {
+      // Base meeting: Last Friday of February 2025.
+      const refYear = 2025;
+      const refMonth = 1; // February (0-based indexing: January is 0, February is 1)
+      
+      // Calculate the month offset (every iteration adds 2 months)
+      const meetingMonthTotal = refMonth + iteration * 2;
+      const meetingYear = refYear + Math.floor(meetingMonthTotal / 12);
+      const meetingMonth = meetingMonthTotal % 12;
+      return getLastFridayOfMonth(meetingYear, meetingMonth);
     }
     
-    const formattedBiMonthNextUpdate = monthNames[nextBiMonthUpdateTime.getMonth()] + " " +
-                                       nextBiMonthUpdateTime.getDate() + " " +
-                                       nextBiMonthUpdateTime.getFullYear();
-
+    /**
+     * (Optional) Checks whether a given date is on the last Friday of its month.
+     */
+    function isLastFridayOfMonth(date) {
+      const lastFriday = getLastFridayOfMonth(date.getFullYear(), date.getMonth());
+      return date.getDate() === lastFriday.getDate();
+    }
     
-    // Update DOM elements for the bimonthly wheel.
+    // --- Meeting Scheduling Logic ---
+    
+    // We'll determine the most recent meeting whose scheduled date is less than or equal to now.
+    // iteration 0 is the first scheduled meeting (last Friday of February 2025).
+    let iteration = 0;
+    let currentMeetingDate = getMeetingDateForIteration(iteration);
+    
+    // Increment iteration until we reach a meeting date that is after the current time.
+    while (getMeetingDateForIteration(iteration) <= now) {
+      currentMeetingDate = getMeetingDateForIteration(iteration);
+      iteration++;
+    }
+    
+    // The meeting that is scheduled next (i.e. the first meeting date that is in the future).
+    const nextMeetingDate = getMeetingDateForIteration(iteration);
+    
+    // Determine the current member based on the number of meetings that have already occurred.
+    // If no meeting has occurred yet, iteration will be 0, meaning the first member in the rotation.
+    const currentMemberIndex = ((iteration - 1) % biMonthMembers.length + biMonthMembers.length) % biMonthMembers.length;
+    const currentMember = biMonthMembers[currentMemberIndex];
+    
+    // Format the next meeting date for display.
+    const formattedNextMeetingDate = monthNames[nextMeetingDate.getMonth()] + " " +
+                                     nextMeetingDate.getDate() + ", " +
+                                     nextMeetingDate.getFullYear();
+    
+    // Update the DOM element with id "biMonthCurrentMember" (adjust as needed in your HTML).
     document.getElementById("biMonthCurrentMember").innerText =
-      "This next speakers' turn (" + formattedBiMonthNextUpdate + "): " + biMonthCurrentMember;
+      "This next speakers' turn (" + formattedNextMeetingDate + "): " + currentMember;
 
     // Draw the bimonthly meeting wheel.
     const biMonthCanvas = document.getElementById("biMonthWheelCanvas");
