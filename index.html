@@ -212,7 +212,7 @@
       const startLineY = textY - totalHeight / 2 + lineHeight / 2;
       
       ctx.fillStyle = "#000000";
-      ctx.font = "1.2em Arial";
+      ctx.font = "1em Arial";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       names.forEach((name, index) => {
@@ -311,7 +311,7 @@
       const textX2 = centerX2 + (radius2 / 2) * Math.cos(midAngle);
       const textY2 = centerY2 + (radius2 / 2) * Math.sin(midAngle);
       ctx2.fillStyle = "#000000";
-      ctx2.font = "1.2em Arial";
+      ctx2.font = "1.4em Arial";
       ctx2.textAlign = "center";
       ctx2.textBaseline = "middle";
       ctx2.fillText(biweekMembers[i], textX2, textY2);
@@ -332,6 +332,7 @@
      * Returns a Date object set to the last Friday of the specified month and year.
      * The returned date’s time is set to 23:59:59.
      */
+    
     function getLastFridayOfMonth(year, month) {
       // Create a Date object for the last day of the month.
       // Note: setting day to 0 in the next month gives us the last day of the desired month.
