@@ -212,7 +212,7 @@
       const startLineY = textY - totalHeight / 2 + lineHeight / 2;
       
       ctx.fillStyle = "#000000";
-      ctx.font = "16px Arial";
+      ctx.font = "1.2em Arial";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       names.forEach((name, index) => {
@@ -311,7 +311,7 @@
       const textX2 = centerX2 + (radius2 / 2) * Math.cos(midAngle);
       const textY2 = centerY2 + (radius2 / 2) * Math.sin(midAngle);
       ctx2.fillStyle = "#000000";
-      ctx2.font = "24px Arial";
+      ctx2.font = "1.2em Arial";
       ctx2.textAlign = "center";
       ctx2.textBaseline = "middle";
       ctx2.fillText(biweekMembers[i], textX2, textY2);
@@ -323,7 +323,7 @@
     
     // Define the members for the bimonthly (every two months) meeting.
     const biMonthMembers = [
-      "SJL", "CHX", "LWT", "QFY", "TXY", "ZZ", "To be determined", "TBD",
+      "SJL", "CHX", "LWT", "QFY", "TXY", "ZZ", "TBD", "TBD",
     ];
     
     // --- Helper Functions ---
@@ -438,7 +438,7 @@
       const textX3 = centerX3 + (radius3 / 2) * Math.cos(midAngle);
       const textY3 = centerY3 + (radius3 / 2) * Math.sin(midAngle);
       ctx3.fillStyle = "#000000";
-      ctx3.font = "24px Arial";
+      ctx3.font = "1.2em Arial";
       ctx3.textAlign = "center";
       ctx3.textBaseline = "middle";
       ctx3.fillText(biMonthMembers[i], textX3, textY3);
