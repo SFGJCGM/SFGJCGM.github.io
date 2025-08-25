@@ -62,12 +62,17 @@
       Time
       <input type="time" id="schedTime" required>
     </label>
-    <button type="submit">Add to Schedule</button>
+    <button type="submit">Add</button>
   </form>
 
   <table id="scheduleTable">
     <thead>
-      <tr><th>Name</th><th>Day</th><th>Time</th></tr>
+      <tr>
+        <th>Name</th>
+        <th>Day</th>
+        <th>Time</th>
+        <th>Action</th>
+      </tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -488,28 +493,40 @@
   const STORAGE_KEY = 'regMeetingSchedule';
 
   const formEl      = document.getElementById(FORM_ID);
-  const tableBodyEl = document.querySelector(TABLE_BODY);
+  const tbodyEl     = document.querySelector(TABLE_BODY);
 
-  // Load saved schedule from localStorage
+  // Load existing entries
   function loadSchedule() {
     const arr = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
     arr.forEach(addRow);
   }
 
-  // Add one row to the table
+  // Add one row (with Delete button)
   function addRow(entry) {
     const tr = document.createElement('tr');
+    // 3 data cells + action cell
     tr.innerHTML = `
       <td>${entry.name}</td>
       <td>${entry.day}</td>
       <td>${entry.time}</td>
+      <td></td>
     `;
-    tableBodyEl.appendChild(tr);
+    // Create & append Delete button
+    const btn = document.createElement('button');
+    btn.textContent = 'Delete';
+    btn.className = 'delete-btn';
+    btn.addEventListener('click', () => {
+      tr.remove();
+      saveSchedule();
+    });
+    tr.lastElementChild.appendChild(btn);
+
+    tbodyEl.appendChild(tr);
   }
 
-  // Save current table back to localStorage
+  // Persist the table to localStorage
   function saveSchedule() {
-    const data = Array.from(tableBodyEl.rows).map(r => ({
+    const data = Array.from(tbodyEl.rows).map(r => ({
       name: r.cells[0].textContent,
       day:  r.cells[1].textContent,
       time: r.cells[2].textContent
@@ -517,8 +534,8 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }
 
-  // Handle form submit
-  formEl.addEventListener('submit', function(e){
+  // Handle new entry
+  formEl.addEventListener('submit', e => {
     e.preventDefault();
     const entry = {
       name: formEl[NAME_INPUT].value.trim(),
@@ -531,7 +548,7 @@
     formEl[NAME_INPUT].focus();
   });
 
-  // Initialize
+  // Init
   loadSchedule();
 })();
 </script>
