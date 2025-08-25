@@ -38,6 +38,40 @@
   </style>
 </head>
 <body>
+  <div class="schedule-container">
+  <h2>Regular Meeting Schedule</h2>
+  <form id="meetingScheduleForm">
+    <label>
+      Name
+      <input type="text" id="schedName" required placeholder="e.g. Alice">
+    </label>
+    <label>
+      Day
+      <select id="schedDay" required>
+        <option value="">Select day</option>
+        <option>Monday</option>
+        <option>Tuesday</option>
+        <option>Wednesday</option>
+        <option>Thursday</option>
+        <option>Friday</option>
+        <option>Saturday</option>
+        <option>Sunday</option>
+      </select>
+    </label>
+    <label>
+      Time
+      <input type="time" id="schedTime" required>
+    </label>
+    <button type="submit">Add to Schedule</button>
+  </form>
+
+  <table id="scheduleTable">
+    <thead>
+      <tr><th>Name</th><th>Day</th><th>Time</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
   <!-- Weekly Meeting Wheel (4 groups) -->
   <div class="container">
     <h1>Group Meeting Wheel</h1>
@@ -444,5 +478,62 @@
       ctx3.fillText(biMonthMembers[i], textX3, textY3);
     }
   </script>
+<script>
+(function(){
+  const FORM_ID     = 'meetingScheduleForm';
+  const NAME_INPUT  = 'schedName';
+  const DAY_SELECT  = 'schedDay';
+  const TIME_INPUT  = 'schedTime';
+  const TABLE_BODY   = '#scheduleTable tbody';
+  const STORAGE_KEY = 'regMeetingSchedule';
+
+  const formEl      = document.getElementById(FORM_ID);
+  const tableBodyEl = document.querySelector(TABLE_BODY);
+
+  // Load saved schedule from localStorage
+  function loadSchedule() {
+    const arr = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    arr.forEach(addRow);
+  }
+
+  // Add one row to the table
+  function addRow(entry) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${entry.name}</td>
+      <td>${entry.day}</td>
+      <td>${entry.time}</td>
+    `;
+    tableBodyEl.appendChild(tr);
+  }
+
+  // Save current table back to localStorage
+  function saveSchedule() {
+    const data = Array.from(tableBodyEl.rows).map(r => ({
+      name: r.cells[0].textContent,
+      day:  r.cells[1].textContent,
+      time: r.cells[2].textContent
+    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  // Handle form submit
+  formEl.addEventListener('submit', function(e){
+    e.preventDefault();
+    const entry = {
+      name: formEl[NAME_INPUT].value.trim(),
+      day:  formEl[DAY_SELECT].value,
+      time: formEl[TIME_INPUT].value
+    };
+    addRow(entry);
+    saveSchedule();
+    formEl.reset();
+    formEl[NAME_INPUT].focus();
+  });
+
+  // Initialize
+  loadSchedule();
+})();
+</script>
 </body>
 </html>
