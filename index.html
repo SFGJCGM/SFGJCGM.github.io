@@ -54,69 +54,100 @@
   firebase.initializeApp(firebaseConfig);
   // We’ll use: firebase.database()
 </script>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schedule</title>
+  <style>
+    .schedule-container {
+      max-width: 600px;
+      margin: 20px auto;
+      font-family: Arial, sans-serif;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate; /* allow spacing between cells */
+      border-spacing: 30px 10px; /* horizontal = 30px, vertical = 10px */
+    }
+
+    th, td {
+      text-align: left;
+      padding: 8px 12px; /* extra padding inside cells */
+    }
+
+    thead th {
+      border-bottom: 2px solid #333;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+  </style>
 </head>
+  
 <body>
   <!-- regular meeting table -->
-<div class="schedule-container">
-  <h1>One-on-one meeting with Huabai</h1>
-  <table id="ScheduleTable">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Day</th>
-        <th>Time</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>JL</td>
-        <td>Tuesday</td>
-        <td>09:00</td>
-      </tr>
-      <tr>
-        <td>YJ</td>
-        <td>Tuesday</td>
-        <td>10:00</td>
-      </tr>
-      <tr>
-        <td>ZZ</td>
-        <td>Tuesday</td>
-        <td>11:00</td>
-      </tr>
-      <tr>
-        <td>SB</td>
-        <td>Thursday</td>
-        <td>09:00</td>
-      </tr>
-      <tr>
-        <td>Tommy</td>
-        <td>Thursday</td>
-        <td>10:00</td>
-      </tr>
-      <tr>
-        <td>Nathan</td>
-        <td>Thursday</td>
-        <td>11:00</td>
-      </tr>
-      <tr>
-        <td>YX</td>
-        <td>Thursday</td>
-        <td>15:00</td>
-      </tr>
-      <tr>
-        <td>FY</td>
-        <td>Thursday</td>
-        <td>16:00</td>
-      </tr>
-      <tr>
-        <td>XY</td>
-        <td>Friday</td>
-        <td>14:00</td>
-      </tr>
-      <!-- 按需增加更多固定行 -->
-    </tbody>
-  </table>
-</div>
+  <div class="schedule-container">
+    <h1>One-on-one meeting with Huabai</h1>
+    <table id="ScheduleTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Day</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>JL</td>
+          <td>Tuesday</td>
+          <td>09:00</td>
+        </tr>
+        <tr>
+          <td>YJ</td>
+          <td>Tuesday</td>
+          <td>10:00</td>
+        </tr>
+        <tr>
+          <td>ZZ</td>
+          <td>Tuesday</td>
+          <td>11:00</td>
+        </tr>
+        <tr>
+          <td>SB</td>
+          <td>Thursday</td>
+          <td>09:00</td>
+        </tr>
+        <tr>
+          <td>Tommy</td>
+          <td>Thursday</td>
+          <td>10:00</td>
+        </tr>
+        <tr>
+          <td>Nathan</td>
+          <td>Thursday</td>
+          <td>11:00</td>
+        </tr>
+        <tr>
+          <td>YX</td>
+          <td>Thursday</td>
+          <td>15:00</td>
+        </tr>
+        <tr>
+          <td>FY</td>
+          <td>Thursday</td>
+          <td>16:00</td>
+        </tr>
+        <tr>
+          <td>XY</td>
+          <td>Friday</td>
+          <td>14:00</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
   <!-- Weekly Meeting Wheel (4 groups) -->
   <div class="container">
     <h1>Group Meeting Wheel</h1>
