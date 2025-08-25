@@ -3,6 +3,103 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <style>
+    .schedule-container {
+      max-width: 600px;
+      margin: 2em auto;
+      padding: 1.5em;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      font-family: Arial, sans-serif;
+    }
+    .schedule-container h2 {
+      margin-top: 0;
+      text-align: center;
+      color: #333;
+    }
+    #meetingScheduleForm {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 1.5em;
+    }
+    #meetingScheduleForm label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.9em;
+      color: #555;
+    }
+    #meetingScheduleForm input,
+    #meetingScheduleForm select {
+      padding: 8px 10px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-top: 4px;
+      transition: border-color 0.2s;
+    }
+    #meetingScheduleForm input:focus,
+    #meetingScheduleForm select:focus {
+      border-color: #6200ea;
+      outline: none;
+    }
+    #meetingScheduleForm button {
+      padding: 10px 16px;
+      font-size: 1em;
+      color: #fff;
+      background: #6200ea;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #meetingScheduleForm button:hover {
+      background: #4500b5;
+    }
+
+    #scheduleTable {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    #scheduleTable th {
+      background: #6200ea;
+      color: #fff;
+      padding: 10px;
+      text-align: left;
+    }
+    #scheduleTable td {
+      border-bottom: 1px solid #e0e0e0;
+      padding: 10px;
+      vertical-align: middle;
+    }
+    #scheduleTable tr:hover {
+      background: #f9f9f9;
+    }
+    .delete-btn {
+      padding: 6px 10px;
+      font-size: 0.9em;
+      color: #fff;
+      background: #e53935;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .delete-btn:hover {
+      background: #ab000d;
+    }
+
+    @media (max-width: 500px) {
+      #meetingScheduleForm {
+        grid-template-columns: 1fr;
+      }
+      #meetingScheduleForm button {
+        width: 100%;
+      }
+    }
+  </style>
   <title>Meeting Turn Wheels</title>
   <style>
     body {
@@ -36,47 +133,70 @@
       margin: 10px 0;
     }
   </style>
+<!-- Firebase SDKs (v9 compat) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script>
+  // ← Replace this config with YOUR project’s config
+  const firebaseConfig = {
+    apiKey: "AIzaSy…",
+    authDomain: "your-proj.firebaseapp.com",
+    databaseURL: "https://your-proj.firebaseio.com",
+    projectId: "your-proj",
+    storageBucket: "your-proj.appspot.com",
+    messagingSenderId: "1234567890",
+    appId: "1:1234567890:web:abcdef123456"
+  };
+  firebase.initializeApp(firebaseConfig);
+  // We’ll use: firebase.database()
+</script>
 </head>
 <body>
   <div class="schedule-container">
-  <h2>Regular Meeting Schedule</h2>
-  <form id="meetingScheduleForm">
-    <label>
-      Name
-      <input type="text" id="schedName" required placeholder="e.g. Alice">
-    </label>
-    <label>
-      Day
-      <select id="schedDay" required>
-        <option value="">Select day</option>
-        <option>Monday</option>
-        <option>Tuesday</option>
-        <option>Wednesday</option>
-        <option>Thursday</option>
-        <option>Friday</option>
-        <option>Saturday</option>
-        <option>Sunday</option>
-      </select>
-    </label>
-    <label>
-      Time
-      <input type="time" id="schedTime" required>
-    </label>
-    <button type="submit">Add</button>
-  </form>
+    <h2>Regular Meeting Schedule</h2>
 
-  <table id="scheduleTable">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Day</th>
-        <th>Time</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
+    <form id="meetingScheduleForm">
+      <label>
+        Name
+        <input type="text" id="schedName" required placeholder="e.g. Alice">
+      </label>
+      <label>
+        Day
+        <select id="schedDay" required>
+          <option value="">Select day</option>
+          <option>Monday</option>
+          <option>Tuesday</option>
+          <option>Wednesday</option>
+          <option>Thursday</option>
+          <option>Friday</option>
+          <option>Saturday</option>
+          <option>Sunday</option>
+        </select>
+      </label>
+      <label>
+        Time
+        <input type="time" id="schedTime" required>
+      </label>
+      <button type="submit">Add</button>
+    </form>
+
+    <table id="scheduleTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Day</th>
+          <th>Time</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows will be injected by your JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Link to your external JS (schedule.js) -->
+  <script src="schedule.js"></script>
   <!-- Weekly Meeting Wheel (4 groups) -->
   <div class="container">
     <h1>Group Meeting Wheel</h1>
@@ -483,74 +603,6 @@
       ctx3.fillText(biMonthMembers[i], textX3, textY3);
     }
   </script>
-<script>
-(function(){
-  const FORM_ID     = 'meetingScheduleForm';
-  const NAME_INPUT  = 'schedName';
-  const DAY_SELECT  = 'schedDay';
-  const TIME_INPUT  = 'schedTime';
-  const TABLE_BODY   = '#scheduleTable tbody';
-  const STORAGE_KEY = 'regMeetingSchedule';
 
-  const formEl      = document.getElementById(FORM_ID);
-  const tbodyEl     = document.querySelector(TABLE_BODY);
-
-  // Load existing entries
-  function loadSchedule() {
-    const arr = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    arr.forEach(addRow);
-  }
-
-  // Add one row (with Delete button)
-  function addRow(entry) {
-    const tr = document.createElement('tr');
-    // 3 data cells + action cell
-    tr.innerHTML = `
-      <td>${entry.name}</td>
-      <td>${entry.day}</td>
-      <td>${entry.time}</td>
-      <td></td>
-    `;
-    // Create & append Delete button
-    const btn = document.createElement('button');
-    btn.textContent = 'Delete';
-    btn.className = 'delete-btn';
-    btn.addEventListener('click', () => {
-      tr.remove();
-      saveSchedule();
-    });
-    tr.lastElementChild.appendChild(btn);
-
-    tbodyEl.appendChild(tr);
-  }
-
-  // Persist the table to localStorage
-  function saveSchedule() {
-    const data = Array.from(tbodyEl.rows).map(r => ({
-      name: r.cells[0].textContent,
-      day:  r.cells[1].textContent,
-      time: r.cells[2].textContent
-    }));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }
-
-  // Handle new entry
-  formEl.addEventListener('submit', e => {
-    e.preventDefault();
-    const entry = {
-      name: formEl[NAME_INPUT].value.trim(),
-      day:  formEl[DAY_SELECT].value,
-      time: formEl[TIME_INPUT].value
-    };
-    addRow(entry);
-    saveSchedule();
-    formEl.reset();
-    formEl[NAME_INPUT].focus();
-  });
-
-  // Init
-  loadSchedule();
-})();
-</script>
 </body>
 </html>
