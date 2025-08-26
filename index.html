@@ -195,10 +195,10 @@
       if (day >= meeting_day) {
         // Suppose that the meeting day is Tuesday (meeting_day = 2)
         // If today is Tuesday or later in the week, candidate date is Tuesday of this week.
-        candidate.setDate(now.getDate() - (day - 2));
+        candidate.setDate(now.getDate() - (day - meeting_day));
       } else {
         // If today is Sunday or Monday, candidate is Tuesday of last week.
-        candidate.setDate(now.getDate() - (day + 5));
+        candidate.setDate(now.getDate() - (day + 7 - meeting_day));
       }
       candidate.setHours(23, 59, 59, 0);
       
