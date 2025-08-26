@@ -166,7 +166,7 @@
     <p id="biweekCurrentMember"></p>
     <p id="biweekNextUpdateDate"></p>
     <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
-      The meeting turn updates every two weeks on Tuesday at 23:59:59 (postponed if it’s a holiday).
+      The meeting turn updates every two weeks on Thursday at 23:59:59 (postponed if it’s a holiday).
     </p>
   </div>
   
@@ -186,12 +186,14 @@
     // Shared Helper and Variables
     // ------------------------------
 
-    // Function to get the effective Tuesday update for a given date.
-    // The effective update is defined as the most recent Tuesday at 23:59:59.
-    function getEffectiveTuesdayUpdate(now) {
+    // Function to get the effective meeting day update for a given date.
+    // The effective update is defined as the most recent meeting day at 23:59:59.
+    // Input: the current day, the desired meeting day in a week
+    function getEffectiveMeetingDayUpdate(now, meeting_day) {
       let day = now.getDay(); // Sunday = 0, Monday = 1, Tuesday = 2, etc.
       let candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      if (day >= 2) {
+      if (day >= meeting_day) {
+        // Suppose that the meeting day is Tuesday (meeting_day = 2)
         // If today is Tuesday or later in the week, candidate date is Tuesday of this week.
         candidate.setDate(now.getDate() - (day - 2));
       } else {
@@ -201,7 +203,7 @@
       candidate.setHours(23, 59, 59, 0);
       
       // Special case: if today is Tuesday but before 23:59:59, roll back to previous week's update.
-      if (now.getDay() === 2 && now < candidate) {
+      if (now.getDay() === meeting_day && now < candidate) {
         candidate.setDate(candidate.getDate() - 7);
       }
       return candidate;
@@ -230,7 +232,7 @@
     refUpdateTime.setHours(23, 59, 59, 0);
 
     // Calculate effective update time and number of weeks passed.
-    const effectiveUpdateTime = getEffectiveTuesdayUpdate(now);
+    const effectiveUpdateTime = getEffectiveMeetingDayUpdate(now, 2);
     let weekDiff = Math.floor((effectiveUpdateTime - refUpdateTime) / msPerWeek);
 
     // Calculate meeting update time.
@@ -344,8 +346,8 @@
 
     // Two-week interval in milliseconds.
     const twoWeeks = msPerWeek * 2;
-    // Get the effective update time for the current moment (still based on Tuesday 23:59:59).
-    const biweekEffectiveUpdateTime = getEffectiveTuesdayUpdate(now);
+    // Get the effective update time for the current moment.
+    const biweekEffectiveUpdateTime = getEffectiveMeetingDayUpdate(now, 4);
     
     // Number of two-week intervals passed between the reference update time and effective update time.
     let biweekDiff = Math.floor((biweekEffectiveUpdateTime - biweekRefTime) / twoWeeks);
