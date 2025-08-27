@@ -267,7 +267,7 @@
 
     // Update DOM elements for weekly wheel.
     document.getElementById("currentMember").innerText =
-      "This next speakers' turn (" + formattedNextUpdate + "): " + currentMember;
+      "This speaker's turn (" + formattedNextUpdate + "): " + currentMember;
     
     // Draw the weekly meeting wheel.
     const canvas = document.getElementById("wheelCanvas");
@@ -336,7 +336,7 @@
     // ------------------------------
     // Journal club members can be added or deleted accordingly
     const biweekMembers = [
-      "YSB", "SJL", "Evan", "LWT", "Nathan", "HJK", 
+      "YSB", "CYJ", "LXY", "LWT", "Nathan", 
       "QFY", "ZZ", "Tommy", "TYX"
     ];
     // Reference start date (this can be changed in case we need to postpone the rotation)
@@ -375,7 +375,7 @@
     
     // Update DOM elements for the biweekly wheel.
     document.getElementById("biweekCurrentMember").innerText =
-          "This next speakers' turn (" + formattedBiweekNextUpdate + "): " + biweekCurrentMember;
+          "This speaker's turn (" + formattedBiweekNextUpdate + "): " + biweekCurrentMember;
     
     // Draw the biweekly meeting wheel.
     const biweekCanvas = document.getElementById("biweekWheelCanvas");
@@ -503,7 +503,7 @@
     
     // Update DOM elements for the bimonthly wheel.
     document.getElementById("biMonthCurrentMember").innerText =
-      "This next speakers' turn (" + formattedBiMonthNextUpdate + "): " + biMonthCurrentMember;
+      "This speaker's turn (" + formattedBiMonthNextUpdate + "): " + biMonthCurrentMember;
 
     // Draw the bimonthly meeting wheel.
     const biMonthCanvas = document.getElementById("biMonthWheelCanvas");
