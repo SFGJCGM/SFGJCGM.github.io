@@ -36,60 +36,50 @@
       height: auto;
       margin: 10px 0;
     }
-  </style>
-<!-- Firebase SDKs (v9 compat) -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-<script>
-  // ← Replace this config with YOUR project’s config
-  const firebaseConfig = {
-    apiKey: "AIzaSy…",
-    authDomain: "your-proj.firebaseapp.com",
-    databaseURL: "https://your-proj.firebaseio.com",
-    projectId: "your-proj",
-    storageBucket: "your-proj.appspot.com",
-    messagingSenderId: "1234567890",
-    appId: "1:1234567890:web:abcdef123456"
-  };
-  firebase.initializeApp(firebaseConfig);
-  // We’ll use: firebase.database()
-</script>
-  
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Schedule</title>
-  <style>
-    .schedule-container {
-      max-width: 600px;
-      margin: 20px auto;
-      font-family: Arial, sans-serif;
-      text-align: center;
-    }
 
-    table {
+    /* Table-specific styles */
+    .container table {
       width: 100%;
-      border-collapse: separate; /* allow spacing between cells */
-      border-spacing: 30px 10px; /* horizontal = 30px, vertical = 10px */
+      border-collapse: separate;
+      border-spacing: 10px 5px; /* Reduced spacing for mobile */
+      margin: 10px 0;
     }
 
-    th, td {
+    .container th, .container td {
       text-align: left;
-      padding: 8px 12px; /* extra padding inside cells */
+      padding: 8px 12px;
     }
 
-    thead th {
+    .container thead th {
       border-bottom: 2px solid #333;
     }
 
-    tbody tr:nth-child(even) {
+    .container tbody tr:nth-child(even) {
       background-color: #f9f9f9;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      .container {
+        max-width: 95%;
+        padding: 15px;
+      }
+      
+      .container table {
+        border-spacing: 5px 3px;
+      }
+      
+      .container th, .container td {
+        padding: 6px 8px;
+        font-size: 14px;
+      }
     }
   </style>
 </head>
   
 <body>
-  <!-- regular meeting table -->
-  <div class="schedule-container">
+  <!-- regular meeting table - now using consistent container class -->
+  <div class="container">
     <h1>One-on-one meeting with Huabai</h1>
     <p>(This table is the default meeting schedule; it is subject to change depending on Huabai's personal availability in a particular week.)</p>
     <table id="ScheduleTable">
