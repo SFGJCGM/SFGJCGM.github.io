@@ -333,11 +333,11 @@
     // ------------------------------
     // Journal club members can be added or deleted accordingly
     const biweekMembers = [
-      "TYX", "YSB", "CYJ", "LXY", "LWT", 
+      "TYX", "CYJ", "LXY", "LWT", 
       "Nathan", "QFY", "ZZ", "Tommy",
     ];
     // Reference start date (this can be changed in case we need to postpone the rotation)
-    const biweekStartDate = new Date("2025-08-07T14:00:00");
+    const biweekStartDate = new Date("2025-07-24T14:00:00");
     const biweekRefTime = new Date(biweekStartDate.getFullYear(), biweekStartDate.getMonth(), biweekStartDate.getDate());
     biweekRefTime.setHours(23, 59, 59, 0);
 
@@ -352,8 +352,8 @@
     // Compute the meeting update time for the biweekly wheel.
     let biweekMeetingUpdateTime = new Date(biweekRefTime.getTime() + biweekDiff * twoWeeks);
     const JCholidayTuesdays = [
-      "2025-07-01", // (holiday example)
-      "2025-10-01"  // (holiday example)
+      "2025-12-25", // (holiday example)
+      "2026-01-01"  // (holiday example)
     ];
     while (JCholidayTuesdays.includes(biweekMeetingUpdateTime.toISOString().substring(0, 10))) {
       biweekDiff++;
