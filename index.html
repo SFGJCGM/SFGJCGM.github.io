@@ -332,54 +332,59 @@
     // Second Wheel: Journal Club, Biweekly
     // ------------------------------
     // Journal club members can be added or deleted accordingly
+
+    // Helper to get YYYY-MM-DD in local time to avoid UTC timezone shifts
+    function toLocalISO(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    // --- Biweekly Meeting Wheel Logic ---
     const biweekMembers = [
       "Tommy", "TYX", "CYJ", "LXY", "LWT", 
       "Nathan", "QFY", "ZZ", 
     ];
-    // Reference start date (this can be changed in case we need to postpone the rotation)
-    const biweekStartDate = new Date("2025-07-24T14:00:00");
-    const biweekRefTime = new Date(biweekStartDate.getFullYear(), biweekStartDate.getMonth(), biweekStartDate.getDate());
-    biweekRefTime.setHours(23, 59, 59, 0);
-
-    // Two-week interval in milliseconds.
+    const biweekRefTime = new Date("2025-07-24T10:00:00");
     const twoWeeks = msPerWeek * 2;
-    // Get the effective update time for the current moment.
-    const biweekEffectiveUpdateTime = getEffectiveMeetingDayUpdate(now, 4);
     
-    // Number of two-week intervals passed between the reference update time and effective update time.
-    let biweekDiff = Math.floor((biweekEffectiveUpdateTime - biweekRefTime) / twoWeeks);
-    
-    // Compute the meeting update time for the biweekly wheel.
-    let biweekMeetingUpdateTime = new Date(biweekRefTime.getTime() + biweekDiff * twoWeeks);
-    
-    // Holiday dates for Journal Club (if the meeting update day falls on a holiday, skip to next biweekly period)
     const JCHolidayDates = [
-      "2025-12-25", // Christmas
-      "2026-01-01"  // New Year's Day
+      "2025-12-25", 
+      "2026-01-01"
     ];
+
+    // 1. Calculate how many biweekly slots have passed since start
+    const biweekEffectiveUpdateTime = getEffectiveMeetingDayUpdate(now, 4);
+    let totalSlotsPassed = Math.floor((biweekEffectiveUpdateTime - biweekRefTime) / twoWeeks);
     
-    while (JCHolidayDates.includes(biweekMeetingUpdateTime.toISOString().substring(0, 10))) {
-      biweekDiff++;
-      biweekMeetingUpdateTime = new Date(biweekRefTime.getTime() + biweekDiff * twoWeeks);
+    // 2. Count how many of those slots were NOT holidays to determine the speaker index
+    let nonHolidayCount = 0;
+    for (let i = 0; i <= totalSlotsPassed; i++) {
+      let checkDate = new Date(biweekRefTime.getTime() + i * twoWeeks);
+      if (!JCHolidayDates.includes(toLocalISO(checkDate))) {
+        nonHolidayCount++;
+      }
     }
 
-    // Determine the current member.
-    const biweekCurrentIndex = ((biweekDiff % biweekMembers.length) + biweekMembers.length) % biweekMembers.length;
+    // 3. Determine current member (using non-holiday count so no one is skipped)
+    const biweekCurrentIndex = ((nonHolidayCount - 1) % biweekMembers.length + biweekMembers.length) % biweekMembers.length;
     const biweekCurrentMember = biweekMembers[biweekCurrentIndex];
-    
-    // Next update time for the biweekly wheel (also check for holidays)
-    let nextBiweekUpdateTime = new Date(biweekMeetingUpdateTime.getTime() + twoWeeks);
-    while (JCHolidayDates.includes(nextBiweekUpdateTime.toISOString().substring(0, 10))) {
+
+    // 4. Calculate the display date (the date this turn ends/next meeting happens)
+    let nextBiweekUpdateTime = new Date(biweekEffectiveUpdateTime.getTime() + (totalSlotsPassed < 0 ? 0 : twoWeeks));
+    // If the next scheduled date is a holiday, keep pushing it forward
+    while (JCHolidayDates.includes(toLocalISO(nextBiweekUpdateTime))) {
       nextBiweekUpdateTime = new Date(nextBiweekUpdateTime.getTime() + twoWeeks);
     }
-    
+
     const formattedBiweekNextUpdate = monthNames[nextBiweekUpdateTime.getMonth()] + " " +
                                       nextBiweekUpdateTime.getDate() + " " +
                                       nextBiweekUpdateTime.getFullYear();
-    
-    // Update DOM elements for the biweekly wheel.
+
     document.getElementById("biweekCurrentMember").innerText =
           "This speaker's turn (" + formattedBiweekNextUpdate + "): " + biweekCurrentMember;
+
 
     // Draw the biweekly meeting wheel.
     const biweekCanvas = document.getElementById("biweekWheelCanvas");
