@@ -224,7 +224,7 @@
     ];
 
     // Set reference start date for weekly wheel. This date can be modified to postpone the rotation.
-    const startDate = new Date("2025-03-25T10:00:00");
+    const startDate = new Date("2025-04-01T10:00:00");
     const refUpdateTime = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
     refUpdateTime.setHours(23, 59, 59, 0);
 
@@ -343,8 +343,8 @@
 
     // --- Biweekly Meeting Wheel Logic ---
     const biweekMembers = [
-      "Tommy", "TYX", "CYJ", "LXY", "LWT", 
-      "Nathan", "QFY", "ZZ", 
+      "ZZ", "TYX", "CYJ", "LXY", "LWT", 
+      "Nathan", "QFY",
     ];
     const biweekRefTime = new Date("2025-07-24T10:00:00");
     const twoWeeks = msPerWeek * 2;
