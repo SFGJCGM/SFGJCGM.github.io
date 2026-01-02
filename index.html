@@ -152,7 +152,7 @@
     <p id="currentMember"></p>
     <p id="nextUpdateDate"></p>
     <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
-      The meeting turn updates every Tuesday at 23:59:59 (postponed if it's a holiday).
+      This meeting wheel updates every Tuesday at 23:59:59 (postponed if it's a holiday).
     </p>
   </div>
 
@@ -163,7 +163,7 @@
     <p id="biweekCurrentMember"></p>
     <p id="biweekNextUpdateDate"></p>
     <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
-      The meeting turn updates every two weeks on Thursday at 23:59:59 (postponed if it's a holiday).
+      This meeting wheel updates every two weeks on Monday at 23:59:59 (postponed if it's a holiday).
     </p>
   </div>
   
@@ -174,7 +174,7 @@
     <p id="biMonthCurrentMember"></p>
     <p id="biMonthNextUpdateDate"></p>
     <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
-      The meeting turn updates bimonthly on the last Friday of a month at 23:59:59 (postponed if it's a holiday).
+      This meeting wheel updates bimonthly on the last Friday of a month at 23:59:59 (postponed if it's a holiday).
     </p>
   </div>
  
@@ -207,7 +207,16 @@
     }
 
     // Array of abbreviated month names for custom date formatting.
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    // Helper to get YYYY-MM-DD in local time to avoid UTC timezone shifts
+    function toLocalISO(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
 
     // Base time measurement.
     const msPerWeek = 1000 * 60 * 60 * 24 * 7;
@@ -236,27 +245,38 @@
     let meetingUpdateTime = new Date(refUpdateTime.getTime() + weekDiff * msPerWeek);
 
     // Holiday Tuesdays (if the meeting update day falls on a holiday, skip to next week).
-    const GMholidayTuesdays = [
+    const GMholidayDates = [
       "2529-02-25", // (holiday example)
       "2529-03-04"  // (holiday example)
     ];
    
-    while (GMholidayTuesdays.includes(meetingUpdateTime.toISOString().substring(0, 10))) {
-      weekDiff++;
-      meetingUpdateTime = new Date(refUpdateTime.getTime() + weekDiff * msPerWeek);
+    // Count non-holidays to avoid skipping groups
+    let gmNonHolidayCount = 0;
+    for (let i = 0; i <= weekDiff; i++) {
+      let checkDate = new Date(refUpdateTime.getTime() + i * msPerWeek);
+      if (!GMholidayDates.includes(toLocalISO(checkDate))) {
+        gmNonHolidayCount++;
+      }
     }
 
-    // Determine current group's index.
-    const currentIndex = ((weekDiff % members.length) + members.length) % members.length;
+    // Determine current group's index using non-holiday count
+    const currentIndex = ((gmNonHolidayCount - 1) % members.length + members.length) % members.length;
     const currentMember = members[currentIndex];
 
-    // Next update time.
-    let nextUpdateTime = new Date(meetingUpdateTime.getTime() + msPerWeek);
+    // Next update time - calculate from reference + (weekDiff + 1) weeks
+    let nextUpdateTime = new Date(refUpdateTime.getTime() + (weekDiff + 1) * msPerWeek);
+    
+    // Skip holidays for the next update date
+    while (GMholidayDates.includes(toLocalISO(nextUpdateTime))) {
+      nextUpdateTime = new Date(nextUpdateTime.getTime() + msPerWeek);
+    }
+
     const options = { 
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
       hour: '2-digit', minute: '2-digit', second: '2-digit'
     };
     const nextUpdateTimeString = nextUpdateTime.toLocaleDateString("en-US", options);
+
     // Format the next update date as "Feb 25 2025", for example.
     const formattedNextUpdate = monthNames[nextUpdateTime.getMonth()] + " " +
                                 nextUpdateTime.getDate() + " " +
@@ -333,19 +353,11 @@
     // ------------------------------
     // Journal club members can be added or deleted accordingly
 
-    // Helper to get YYYY-MM-DD in local time to avoid UTC timezone shifts
-    function toLocalISO(date) {
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, '0');
-      const d = String(date.getDate()).padStart(2, '0');
-      return `${y}-${m}-${d}`;
-    }
-
     // --- Biweekly Meeting Wheel Logic ---
     const biweekMembers = [
        "TYX", "YXY \n (TK's group)", "CYJ", "LXY", "LWT", "Nathan", "QFY", "ZZ", 
     ];
-    const biweekRefTime = new Date("2025-07-24T10:00:00");
+    const biweekRefTime = new Date("2025-07-21T10:00:00");
     const twoWeeks = msPerWeek * 2;
     
     const JCHolidayDates = [
@@ -384,9 +396,9 @@
                                       nextBiweekUpdateTime.getFullYear();
 
     document.getElementById("biweekCurrentMember").innerText =
-          "This speaker's turn (" + formattedBiweekNextUpdate + "): " + biweekCurrentMember;
+          "This speaker's turn (" + formattedBiweekNextUpdate + "): " + biweekCurrentMember.replace(/\n/g, " ");
 
-
+        
     // Draw the biweekly meeting wheel.
     const biweekCanvas = document.getElementById("biweekWheelCanvas");
     const ctx2 = biweekCanvas.getContext("2d");
@@ -453,7 +465,7 @@
     
     // Define the members for the bimonthly (every two months) meeting.
     const biMonthMembers = [
-      "SJL", "CHX", "LWT", "QFY", "TXY", "ZZ", "TBD", "TBD",
+      "SJL", "CHX", "LWT", "QFY", "TYX", "ZZ", "TBD", "TBD",
     ];
     
     // --- Helper Functions ---
