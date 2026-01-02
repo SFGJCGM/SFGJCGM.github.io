@@ -435,7 +435,16 @@
       ctx2.font = "1.5em Arial";
       ctx2.textAlign = "center";
       ctx2.textBaseline = "middle";
-      ctx2.fillText(biweekMembers[i], textX2, textY2);
+
+      // Support multi-line text by splitting on \n
+      const lines2 = biweekMembers[i].split("\n");
+      const lineHeight2 = 30; // Vertical spacing between lines
+      const totalHeight2 = lines2.length * lineHeight2;
+      const startY2 = textY2 - totalHeight2 / 2 + lineHeight2 / 2;
+
+      lines2.forEach((line, idx) => {
+        ctx2.fillText(line.trim(), textX2, startY2 + idx * lineHeight2);
+      });
     }
 
     // ------------------------------
