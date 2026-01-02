@@ -343,7 +343,7 @@
 
     // --- Biweekly Meeting Wheel Logic ---
     const biweekMembers = [
-       "QFY", "ZZ", "TYX", "CYJ", "LXY", "LWT", "Nathan",
+       "QFY", "ZZ", "TYX", "YXY (TK's group)", "CYJ", "LXY", "LWT", "Nathan",
     ];
     const biweekRefTime = new Date("2025-07-24T10:00:00");
     const twoWeeks = msPerWeek * 2;
@@ -371,7 +371,9 @@
     const biweekCurrentMember = biweekMembers[biweekCurrentIndex];
 
     // 4. Calculate the display date (the date this turn ends/next meeting happens)
-    let nextBiweekUpdateTime = new Date(biweekEffectiveUpdateTime.getTime() + (totalSlotsPassed < 0 ? 0 : twoWeeks));
+    // Calculate next time based on refTime + (slots + 1) * twoWeeks, not effectiveTime
+    let nextBiweekUpdateTime = new Date(biweekRefTime.getTime() + (totalSlotsPassed + 1) * twoWeeks);
+    
     // If the next scheduled date is a holiday, keep pushing it forward
     while (JCHolidayDates.includes(toLocalISO(nextBiweekUpdateTime))) {
       nextBiweekUpdateTime = new Date(nextBiweekUpdateTime.getTime() + twoWeeks);
