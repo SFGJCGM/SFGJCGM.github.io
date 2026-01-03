@@ -355,9 +355,9 @@
 
     // --- Biweekly Meeting Wheel Logic ---
     const biweekMembers = [
-       "TYX", "YXY \n (TK's group)", "CYJ", "LXY", "LWT", "Nathan", "QFY", "ZZ", 
+        "ZZ", "TYX", "YXY \n (TK's group)", "CYJ", "LXY", "LWT", "Nathan", "QFY",
     ];
-    const biweekRefTime = new Date("2025-07-21T10:00:00");
+    const biweekRefTime = new Date("2025-07-14T10:00:00");
     const twoWeeks = msPerWeek * 2;
     
     const JCHolidayDates = [
@@ -366,7 +366,7 @@
     ];
 
     // 1. Calculate how many biweekly slots have passed since start
-    const biweekEffectiveUpdateTime = getEffectiveMeetingDayUpdate(now, 4);
+    const biweekEffectiveUpdateTime = getEffectiveMeetingDayUpdate(now, 1);
     let totalSlotsPassed = Math.floor((biweekEffectiveUpdateTime - biweekRefTime) / twoWeeks);
     
     // 2. Count how many of those slots were NOT holidays to determine the speaker index
