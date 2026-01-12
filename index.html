@@ -284,7 +284,7 @@
 
     // Update DOM elements for weekly wheel.
     document.getElementById("currentMember").innerText =
-      "This speaker's turn (" + formattedNextUpdate + "): " + currentMember;
+      "This speaker's turn (" + formattedNextUpdate + " at 2:30 PM): " + currentMember;
     
     // Draw the weekly meeting wheel.
     const canvas = document.getElementById("wheelCanvas");
@@ -396,7 +396,7 @@
                                       nextBiweekUpdateTime.getFullYear();
 
     document.getElementById("biweekCurrentMember").innerText =
-          "This speaker's turn (" + formattedBiweekNextUpdate + "): " + biweekCurrentMember.replace(/\n/g, " ");
+          "This speaker's turn (" + formattedBiweekNextUpdate + " at 3:00 PM): " + biweekCurrentMember.replace(/\n/g, " ");
 
         
     // Draw the biweekly meeting wheel.
