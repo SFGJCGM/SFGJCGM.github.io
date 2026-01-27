@@ -490,13 +490,12 @@
     
     /**
      * Given an iteration number (starting at 0), returns the meeting date.
-     * Iteration 0 corresponds to the meeting on the last Friday of February 2025.
      * Every iteration adds 2 months.
      */
     function getMeetingDateForIteration(iteration) {
-      // Base meeting: Last Friday of February 2025.
+      // Base meeting: a month in 2025.
       const refYear = 2025;
-      const refMonth = 5; // 0-based indexing: January is 0, February is 1
+      const refMonth = 3; // 0-based indexing: January is 0, February is 1
       
       // Calculate the month offset (every iteration adds 2 months)
       const meetingMonthTotal = refMonth + iteration * 2;
@@ -509,23 +508,43 @@
     
     // We'll determine the most recent meeting whose scheduled date is less than or equal to now.
     // iteration 0 is the first scheduled meeting (last Friday of February 2025).
+
+    // Holidays for the bimonthly wheel (YYYY-MM-DD local dates)
+    const biMonthHolidayDates = [
+       "2525-02-28", "2026-02-27"
+    ];
+
+    // Count how many non-holiday meetings have occurred up to now,
+    // and find the next non-holiday meeting date in the future.
     let iteration = 0;
-    let currentMeetingDate = getMeetingDateForIteration(iteration);
-    
-    // Increment iteration until we reach a meeting date that is after the current time.
-    while (getMeetingDateForIteration(iteration) <= now) {
-      currentMeetingDate = getMeetingDateForIteration(iteration);
-      iteration++;
+    let nonHolidayCountBimonthly = 0;
+    let nextMeetingDate = null;
+
+    while (true) {
+      const meetingDate = getMeetingDateForIteration(iteration);
+      if (meetingDate <= now) {
+        // past (or today) meeting: count only if it's NOT a holiday
+        if (!biMonthHolidayDates.includes(toLocalISO(meetingDate))) {
+          nonHolidayCountBimonthly ++;
+        }
+        iteration++;
+        continue;
+      } else {
+        // future meeting found; ensure it's not a holiday (if it is, advance iterations)
+        nextMeetingDate = meetingDate;
+        while (biMonthHolidayDates.includes(toLocalISO(nextMeetingDate))) {
+          iteration++;
+          nextMeetingDate = getMeetingDateForIteration(iteration);
+        }
+        break;
+      }
     }
-    
-    // The meeting that is scheduled next (i.e. the first meeting date that is in the future).
-    const nextMeetingDate = getMeetingDateForIteration(iteration);
-    
-    // Determine the current member based on the number of meetings that have already occurred.
-    // If no meeting has occurred yet, iteration will be 0, meaning the first member in the rotation.
-    const currentMemberIndex = ((iteration - 1) % biMonthMembers.length + biMonthMembers.length) % biMonthMembers.length;
+
+    // Determine the current member index using nonHolidayCount so nobody is skipped.
+    const currentMemberIndex = ((nonHolidayCountBimonthly - 1) % biMonthMembers.length + biMonthMembers.length) % biMonthMembers.length;
     const biMonthCurrentMember = biMonthMembers[currentMemberIndex];
-    
+
+
     // Format the next meeting date for display.
     const formattedBiMonthNextUpdate = monthNames[nextMeetingDate.getMonth()] + " " +
                                        nextMeetingDate.getDate() + ", " +
