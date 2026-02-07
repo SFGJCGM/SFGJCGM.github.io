@@ -357,7 +357,7 @@
     const biweekMembers = [
          "QFY", "ZZ", "TYX", "YXY \n (TK's group)", "CYJ", "LXY", "LWT", "Nathan",
     ];
-    const biweekRefTime = new Date("2025-07-21T10:00:00");
+    const biweekRefTime = new Date("2025-07-28T10:00:00");
     const twoWeeks = msPerWeek * 2;
     
     const JCHolidayDates = [
@@ -398,7 +398,6 @@
     document.getElementById("biweekCurrentMember").innerText =
           "This speaker's turn (" + formattedBiweekNextUpdate + " at 3:00 PM): " + biweekCurrentMember.replace(/\n/g, " ");
 
-        
     // Draw the biweekly meeting wheel.
     const biweekCanvas = document.getElementById("biweekWheelCanvas");
     const ctx2 = biweekCanvas.getContext("2d");
