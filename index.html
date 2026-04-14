@@ -41,7 +41,7 @@
     .container table {
       width: 100%;
       border-collapse: separate;
-      border-spacing: 10px 5px; /* Reduced spacing for mobile */
+      border-spacing: 10px 5px;
       margin: 10px 0;
     }
 
@@ -78,7 +78,7 @@
 </head>
   
 <body>
-  <!-- regular meeting table - now using consistent container class -->
+  <!-- regular meeting table -->
   <div class="container">
     <h1>One-on-one meeting with Huabai</h1>
     <p>(This table is the default meeting schedule; it is subject to change depending on Huabai's personal availability in a particular week.)</p>
@@ -145,14 +145,25 @@
     </table>
   </div>
 
-  <!-- Weekly Meeting Wheel (4 groups) -->
+  <!-- Weekly Meeting Wheel (Theory Group) -->
   <div class="container">
-    <h1>Group Meeting Wheel</h1>
+    <h1>Theory Group Meeting</h1>
     <canvas id="wheelCanvas" width="400" height="400"></canvas>
     <p id="currentMember"></p>
     <p id="nextUpdateDate"></p>
     <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
       This meeting wheel updates every Tuesday at 23:59:59 (postponed if it's a holiday).
+    </p>
+  </div>
+
+  <!-- New Weekly Meeting Wheel (Instrumentation Group) -->
+  <div class="container">
+    <h1>Instrumentation Group Meeting</h1>
+    <canvas id="instrumentationWheelCanvas" width="400" height="400"></canvas>
+    <p id="instrumentationCurrentMember"></p>
+    <p id="instrumentationNextUpdateDate"></p>
+    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+      This meeting wheel updates every Thursday at 23:59:59 (postponed if it's a holiday).
     </p>
   </div>
 
@@ -183,34 +194,25 @@
     // Shared Helper and Variables
     // ------------------------------
 
-    // Function to get the effective meeting day update for a given date.
-    // The effective update is defined as the most recent meeting day at 23:59:59.
-    // Input: the current day, the desired meeting day in a week
     function getEffectiveMeetingDayUpdate(now, meeting_day) {
-      let day = now.getDay(); // Sunday = 0, Monday = 1, Tuesday = 2, etc.
+      let day = now.getDay();
       let candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       if (day >= meeting_day) {
-        // Suppose that the meeting day is Tuesday (meeting_day = 2)
-        // If today is Tuesday or later in the week, candidate date is Tuesday of this week.
         candidate.setDate(now.getDate() - (day - meeting_day));
       } else {
-        // If today is Sunday or Monday, candidate is Tuesday of last week.
         candidate.setDate(now.getDate() - (day + 7 - meeting_day));
       }
       candidate.setHours(23, 59, 59, 0);
       
-      // Special case: if today is Tuesday but before 23:59:59, roll back to previous week's update.
       if (now.getDay() === meeting_day && now < candidate) {
         candidate.setDate(candidate.getDate() - 7);
       }
       return candidate;
     }
 
-    // Array of abbreviated month names for custom date formatting.
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-    // Helper to get YYYY-MM-DD in local time to avoid UTC timezone shifts
     function toLocalISO(date) {
       const y = date.getFullYear();
       const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -218,90 +220,69 @@
       return `${y}-${m}-${d}`;
     }
 
-    // Base time measurement.
     const msPerWeek = 1000 * 60 * 60 * 24 * 7;
     const now = new Date();
 
+    const colors = ["#FF6384", "#36A2EB", "#FFCE56", "#8BC34A", "#FF9800"];
+
     // ------------------------------
-    // First Wheel: Weekly group meeting (4 groups)
+    // Theory Group Meeting (Tuesday)
     // ------------------------------
-    const members = [
+    const theoryMembers = [
       "ZZ, QFY, TYX",
       "YSB, Tommy", 
-      "CYJ, Nathan",
-      "LWT, SJL, LXY", 
+      "Nathan, LXY",
+     
     ];
 
-    // Set reference start date for weekly wheel. This date can be modified to postpone the rotation.
-    const startDate = new Date("2025-04-08T10:00:00");
-    const refUpdateTime = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-    refUpdateTime.setHours(23, 59, 59, 0);
+    const theoryStartDate = new Date("2025-04-08T10:00:00");
+    const theoryRefUpdateTime = new Date(theoryStartDate.getFullYear(), theoryStartDate.getMonth(), theoryStartDate.getDate());
+    theoryRefUpdateTime.setHours(23, 59, 59, 0);
 
-    // Calculate effective update time and number of weeks passed.
-    const effectiveUpdateTime = getEffectiveMeetingDayUpdate(now, 2);
-    let weekDiff = Math.floor((effectiveUpdateTime - refUpdateTime) / msPerWeek);
+    const theoryEffectiveUpdateTime = getEffectiveMeetingDayUpdate(now, 2);
+    let theoryWeekDiff = Math.floor((theoryEffectiveUpdateTime - theoryRefUpdateTime) / msPerWeek);
 
-    // Calculate meeting update time.
-    let meetingUpdateTime = new Date(refUpdateTime.getTime() + weekDiff * msPerWeek);
-
-    // Holiday Tuesdays (if the meeting update day falls on a holiday, skip to next week).
-    const GMholidayDates = [
-      "2529-02-25", // (holiday example)
-      "2529-03-04"  // (holiday example)
+    const TheoryHolidayDates = [
+      "2529-02-25",
+      "2529-03-04"
     ];
-   
-    // Count non-holidays to avoid skipping groups
-    let gmNonHolidayCount = 0;
-    for (let i = 0; i <= weekDiff; i++) {
-      let checkDate = new Date(refUpdateTime.getTime() + i * msPerWeek);
-      if (!GMholidayDates.includes(toLocalISO(checkDate))) {
-        gmNonHolidayCount++;
+
+    let theoryNonHolidayCount = 0;
+    for (let i = 0; i <= theoryWeekDiff; i++) {
+      let checkDate = new Date(theoryRefUpdateTime.getTime() + i * msPerWeek);
+      if (!TheoryHolidayDates.includes(toLocalISO(checkDate))) {
+        theoryNonHolidayCount++;
       }
     }
 
-    // Determine current group's index using non-holiday count
-    const currentIndex = ((gmNonHolidayCount - 1) % members.length + members.length) % members.length;
-    const currentMember = members[currentIndex];
+    const theoryCurrentIndex = ((theoryNonHolidayCount - 1) % theoryMembers.length + theoryMembers.length) % theoryMembers.length;
+    const theoryCurrentMember = theoryMembers[theoryCurrentIndex];
 
-    // Next update time - calculate from reference + (weekDiff + 1) weeks
-    let nextUpdateTime = new Date(refUpdateTime.getTime() + (weekDiff + 1) * msPerWeek);
-    
-    // Skip holidays for the next update date
-    while (GMholidayDates.includes(toLocalISO(nextUpdateTime))) {
-      nextUpdateTime = new Date(nextUpdateTime.getTime() + msPerWeek);
+    let theoryNextUpdateTime = new Date(theoryRefUpdateTime.getTime() + (theoryWeekDiff + 1) * msPerWeek);
+    while (TheoryHolidayDates.includes(toLocalISO(theoryNextUpdateTime))) {
+      theoryNextUpdateTime = new Date(theoryNextUpdateTime.getTime() + msPerWeek);
     }
 
-    const options = { 
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-      hour: '2-digit', minute: '2-digit', second: '2-digit'
-    };
-    const nextUpdateTimeString = nextUpdateTime.toLocaleDateString("en-US", options);
+    const theoryFormattedNextUpdate = monthNames[theoryNextUpdateTime.getMonth()] + " " +
+                                      theoryNextUpdateTime.getDate() + " " +
+                                      theoryNextUpdateTime.getFullYear();
 
-    // Format the next update date as "Feb 25 2025", for example.
-    const formattedNextUpdate = monthNames[nextUpdateTime.getMonth()] + " " +
-                                nextUpdateTime.getDate() + " " +
-                                nextUpdateTime.getFullYear();
-
-    // Update DOM elements for weekly wheel.
     document.getElementById("currentMember").innerText =
-      "This speaker's turn (" + formattedNextUpdate + " at 2:30 PM): " + currentMember;
-    
-    // Draw the weekly meeting wheel.
+      "This speaker's turn (" + theoryFormattedNextUpdate + " at 2:30 PM): " + theoryCurrentMember;
+
     const canvas = document.getElementById("wheelCanvas");
     const ctx = canvas.getContext("2d");
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
     const radius = Math.min(centerX, centerY) - 20;
-    const numSegments = members.length;
+    const numSegments = theoryMembers.length;
     const segmentAngle = 2 * Math.PI / numSegments;
-    const colors = ["#FF6384", "#36A2EB", "#FFCE56", "#8BC34A", "#FF9800"];
 
     for (let i = 0; i < numSegments; i++) {
       const startAngle = i * segmentAngle;
       const endAngle = startAngle + segmentAngle;
       const midAngle = startAngle + segmentAngle / 2;
   
-      // Create a gradient fill for each segment.
       const innerX = centerX;
       const innerY = centerY;
       const outerX = centerX + radius * Math.cos(midAngle);
@@ -318,8 +299,7 @@
       ctx.fillStyle = gradient;
       ctx.fill();
 
-      // Highlight the current group's segment with a red stroke and shadow.
-      if (i === currentIndex) {
+      if (i === theoryCurrentIndex) {
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.6)";
         ctx.shadowBlur = 10;
@@ -329,12 +309,10 @@
         ctx.restore();
       }
       
-      // Draw the group's names inside the segment.
       const textX = centerX + (radius / 2) * Math.cos(midAngle);
       const textY = centerY + (radius / 2) * Math.sin(midAngle);
       
-      // Split names (if more than one) and display them on separate lines.
-      let names = members[i].split(",").map(name => name.trim());
+      let names = theoryMembers[i].split(",").map(name => name.trim());
       const lineHeight = 18;
       const totalHeight = names.length * lineHeight;
       const startLineY = textY - totalHeight / 2 + lineHeight / 2;
@@ -349,11 +327,103 @@
     }
 
     // ------------------------------
+    // Instrumentation Group Meeting (Thursday)
+    // ------------------------------
+    const instrumentationMembers = [
+      "LWT",
+      "SJL", 
+      "CYJ",
+      "LXY", 
+      "Danny",
+    ];
+
+    const instrumentationStartDate = new Date("2025-04-10T10:00:00");
+    const instrumentationRefUpdateTime = new Date(instrumentationStartDate.getFullYear(), instrumentationStartDate.getMonth(), instrumentationStartDate.getDate());
+    instrumentationRefUpdateTime.setHours(23, 59, 59, 0);
+
+    const instrumentationEffectiveUpdateTime = getEffectiveMeetingDayUpdate(now, 4); // Thursday
+    let instrumentationWeekDiff = Math.floor((instrumentationEffectiveUpdateTime - instrumentationRefUpdateTime) / msPerWeek);
+
+    const InstrumentationHolidayDates = [
+      "2529-02-27",
+      "2529-03-06"
+    ];
+
+    let instrumentationNonHolidayCount = 0;
+    for (let i = 0; i <= instrumentationWeekDiff; i++) {
+      let checkDate = new Date(instrumentationRefUpdateTime.getTime() + i * msPerWeek);
+      if (!InstrumentationHolidayDates.includes(toLocalISO(checkDate))) {
+        instrumentationNonHolidayCount++;
+      }
+    }
+
+    const instrumentationCurrentIndex = ((instrumentationNonHolidayCount - 1) % instrumentationMembers.length + instrumentationMembers.length) % instrumentationMembers.length;
+    const instrumentationCurrentMember = instrumentationMembers[instrumentationCurrentIndex];
+
+    let instrumentationNextUpdateTime = new Date(instrumentationRefUpdateTime.getTime() + (instrumentationWeekDiff + 1) * msPerWeek);
+    while (InstrumentationHolidayDates.includes(toLocalISO(instrumentationNextUpdateTime))) {
+      instrumentationNextUpdateTime = new Date(instrumentationNextUpdateTime.getTime() + msPerWeek);
+    }
+
+    const instrumentationFormattedNextUpdate = monthNames[instrumentationNextUpdateTime.getMonth()] + " " +
+                                              instrumentationNextUpdateTime.getDate() + " " +
+                                              instrumentationNextUpdateTime.getFullYear();
+
+    document.getElementById("instrumentationCurrentMember").innerText =
+      "This speaker's turn (" + instrumentationFormattedNextUpdate + " at 2 PM): " + instrumentationCurrentMember;
+
+    const instrumentationCanvas = document.getElementById("instrumentationWheelCanvas");
+    const ctxInstr = instrumentationCanvas.getContext("2d");
+    const centerXInstr = instrumentationCanvas.width / 2;
+    const centerYInstr = instrumentationCanvas.height / 2;
+    const radiusInstr = Math.min(centerXInstr, centerYInstr) - 20;
+    const numSegmentsInstr = instrumentationMembers.length;
+    const segmentAngleInstr = 2 * Math.PI / numSegmentsInstr;
+
+    for (let i = 0; i < numSegmentsInstr; i++) {
+      const startAngle = i * segmentAngleInstr;
+      const endAngle = startAngle + segmentAngleInstr;
+      const midAngle = startAngle + segmentAngleInstr / 2;
+  
+      const innerXInstr = centerXInstr;
+      const innerYInstr = centerYInstr;
+      const outerXInstr = centerXInstr + radiusInstr * Math.cos(midAngle);
+      const outerYInstr = centerYInstr + radiusInstr * Math.sin(midAngle);
+      let gradientInstr = ctxInstr.createLinearGradient(innerXInstr, innerYInstr, outerXInstr, outerYInstr);
+      let baseColor = colors[i % colors.length];
+      gradientInstr.addColorStop(0, "white");
+      gradientInstr.addColorStop(1, baseColor);
+      
+      ctxInstr.beginPath();
+      ctxInstr.moveTo(centerXInstr, centerYInstr);
+      ctxInstr.arc(centerXInstr, centerYInstr, radiusInstr, startAngle, endAngle);
+      ctxInstr.closePath();
+      ctxInstr.fillStyle = gradientInstr;
+      ctxInstr.fill();
+
+      if (i === instrumentationCurrentIndex) {
+        ctxInstr.save();
+        ctxInstr.shadowColor = "rgba(0,0,0,0.6)";
+        ctxInstr.shadowBlur = 10;
+        ctxInstr.lineWidth = 8;
+        ctxInstr.strokeStyle = "#FF0000";
+        ctxInstr.stroke();
+        ctxInstr.restore();
+      }
+      
+      const textXInstr = centerXInstr + (radiusInstr / 2) * Math.cos(midAngle);
+      const textYInstr = centerYInstr + (radiusInstr / 2) * Math.sin(midAngle);
+      
+      ctxInstr.fillStyle = "#000000";
+      ctxInstr.font = "1em Arial";
+      ctxInstr.textAlign = "center";
+      ctxInstr.textBaseline = "middle";
+      ctxInstr.fillText(instrumentationMembers[i], textXInstr, textYInstr);
+    }
+
+    // ------------------------------
     // Second Wheel: Journal Club, Biweekly
     // ------------------------------
-    // Journal club members can be added or deleted accordingly
-
-    // --- Biweekly Meeting Wheel Logic ---
     const biweekMembers = [
          "QFY", "TYX", "YXY \n (TK's group)", "CYJ", "LXY", "LWT", "Nathan", "ZZ",
     ];
@@ -365,11 +435,9 @@
       "2026-02-09"
     ];
 
-    // 1. Calculate how many biweekly slots have passed since start
     const biweekEffectiveUpdateTime = getEffectiveMeetingDayUpdate(now, 1);
     let totalSlotsPassed = Math.floor((biweekEffectiveUpdateTime - biweekRefTime) / twoWeeks);
     
-    // 2. Count how many of those slots were NOT holidays to determine the speaker index
     let nonHolidayCount = 0;
     for (let i = 0; i <= totalSlotsPassed; i++) {
       let checkDate = new Date(biweekRefTime.getTime() + i * twoWeeks);
@@ -378,15 +446,10 @@
       }
     }
 
-    // 3. Determine current member (using non-holiday count so no one is skipped)
     const biweekCurrentIndex = ((nonHolidayCount - 1) % biweekMembers.length + biweekMembers.length) % biweekMembers.length;
     const biweekCurrentMember = biweekMembers[biweekCurrentIndex];
 
-    // 4. Calculate the display date (the date this turn ends/next meeting happens)
-    // Calculate next time based on refTime + (slots + 1) * twoWeeks, not effectiveTime
     let nextBiweekUpdateTime = new Date(biweekRefTime.getTime() + (totalSlotsPassed + 1) * twoWeeks);
-    
-    // If the next scheduled date is a holiday, keep pushing it forward
     while (JCHolidayDates.includes(toLocalISO(nextBiweekUpdateTime))) {
       nextBiweekUpdateTime = new Date(nextBiweekUpdateTime.getTime() + twoWeeks);
     }
@@ -398,7 +461,6 @@
     document.getElementById("biweekCurrentMember").innerText =
           "This speaker's turn (" + formattedBiweekNextUpdate + " at 3:00 PM): " + biweekCurrentMember.replace(/\n/g, " ");
 
-    // Draw the biweekly meeting wheel.
     const biweekCanvas = document.getElementById("biweekWheelCanvas");
     const ctx2 = biweekCanvas.getContext("2d");
     const centerX2 = biweekCanvas.width / 2;
@@ -428,7 +490,6 @@
       ctx2.fillStyle = gradient2;
       ctx2.fill();
       
-      // Highlight the current member.
       if (i === biweekCurrentIndex) {
         ctx2.save();
         ctx2.shadowColor = "rgba(0,0,0,0.6)";
@@ -439,7 +500,6 @@
         ctx2.restore();
       }
       
-      // Draw the member's name.
       const textX2 = centerX2 + (radius2 / 2) * Math.cos(midAngle);
       const textY2 = centerY2 + (radius2 / 2) * Math.sin(midAngle);
       ctx2.fillStyle = "#000000";
@@ -447,9 +507,8 @@
       ctx2.textAlign = "center";
       ctx2.textBaseline = "middle";
 
-      // Support multi-line text by splitting on \n
       const lines2 = biweekMembers[i].split("\n");
-      const lineHeight2 = 30; // Vertical spacing between lines
+      const lineHeight2 = 30;
       const totalHeight2 = lines2.length * lineHeight2;
       const startY2 = textY2 - totalHeight2 / 2 + lineHeight2 / 2;
 
@@ -459,62 +518,35 @@
     }
 
     // ------------------------------
-    // Third Wheel: Bimonthly Meeting (last Friday of a month, every two month)
+    // Third Wheel: Bimonthly Meeting
     // ------------------------------
-    
-    // Define the members for the bimonthly (every two months) meeting.
     const biMonthMembers = [
       "SJL", "CHX", "LWT", "QFY", "TYX", "ZZ", "TBD", "TBD",
     ];
     
-    // --- Helper Functions ---
-    
-    /**
-     * Returns a Date object set to the last Friday of the specified month and year.
-     * The returned date’s time is set to 23:59:59.
-     */
-    
     function getLastFridayOfMonth(year, month) {
-      // Create a Date object for the last day of the month.
-      // Note: setting day to 0 in the next month gives us the last day of the desired month.
       const lastDay = new Date(year, month + 1, 0);
-      // Find the last Friday by stepping back until the day-of-week equals 5.
       let lastFriday = new Date(lastDay);
-      while (lastFriday.getDay() !== 5) { // 5 represents Friday
+      while (lastFriday.getDay() !== 5) {
         lastFriday.setDate(lastFriday.getDate() - 1);
       }
       lastFriday.setHours(23, 59, 59, 0);
       return lastFriday;
     }
     
-    /**
-     * Given an iteration number (starting at 0), returns the meeting date.
-     * Every iteration adds 2 months.
-     */
     function getMeetingDateForIteration(iteration) {
-      // Base meeting: a month in 2025.
       const refYear = 2025;
-      const refMonth = 3; // 0-based indexing: January is 0, February is 1
-      
-      // Calculate the month offset (every iteration adds 2 months)
+      const refMonth = 3;
       const meetingMonthTotal = refMonth + iteration * 2;
       const meetingYear = refYear + Math.floor(meetingMonthTotal / 12);
       const meetingMonth = meetingMonthTotal % 12;
       return getLastFridayOfMonth(meetingYear, meetingMonth);
     }
-    
-    // --- Meeting Scheduling Logic ---
-    
-    // We'll determine the most recent meeting whose scheduled date is less than or equal to now.
-    // iteration 0 is the first scheduled meeting (last Friday of February 2025).
 
-    // Holidays for the bimonthly wheel (YYYY-MM-DD local dates)
     const biMonthHolidayDates = [
        "2525-02-28", "2026-02-27"
     ];
 
-    // Count how many non-holiday meetings have occurred up to now,
-    // and find the next non-holiday meeting date in the future.
     let iteration = 0;
     let nonHolidayCountBimonthly = 0;
     let nextMeetingDate = null;
@@ -522,14 +554,12 @@
     while (true) {
       const meetingDate = getMeetingDateForIteration(iteration);
       if (meetingDate <= now) {
-        // past (or today) meeting: count only if it's NOT a holiday
         if (!biMonthHolidayDates.includes(toLocalISO(meetingDate))) {
           nonHolidayCountBimonthly ++;
         }
         iteration++;
         continue;
       } else {
-        // future meeting found; ensure it's not a holiday (if it is, advance iterations)
         nextMeetingDate = meetingDate;
         while (biMonthHolidayDates.includes(toLocalISO(nextMeetingDate))) {
           iteration++;
@@ -539,22 +569,16 @@
       }
     }
 
-    // Determine the current member index using nonHolidayCount so nobody is skipped.
     const currentMemberIndex = ((nonHolidayCountBimonthly - 1) % biMonthMembers.length + biMonthMembers.length) % biMonthMembers.length;
     const biMonthCurrentMember = biMonthMembers[currentMemberIndex];
 
-
-    // Format the next meeting date for display.
     const formattedBiMonthNextUpdate = monthNames[nextMeetingDate.getMonth()] + " " +
                                        nextMeetingDate.getDate() + ", " +
                                        nextMeetingDate.getFullYear();
 
-    
-    // Update DOM elements for the bimonthly wheel.
     document.getElementById("biMonthCurrentMember").innerText =
       "This speaker's turn (" + formattedBiMonthNextUpdate + "): " + biMonthCurrentMember;
 
-    // Draw the bimonthly meeting wheel.
     const biMonthCanvas = document.getElementById("biMonthWheelCanvas");
     const ctx3 = biMonthCanvas.getContext("2d");
     const centerX3 = biMonthCanvas.width / 2;
@@ -584,7 +608,6 @@
       ctx3.fillStyle = gradient3;
       ctx3.fill();
 
-      // Highlight the current member's segment.
       if (i === currentMemberIndex) {
         ctx3.save();
         ctx3.shadowColor = "rgba(0,0,0,0.6)";
@@ -595,7 +618,6 @@
         ctx3.restore();
       }
 
-      // Draw the member's name.
       const textX3 = centerX3 + (radius3 / 2) * Math.cos(midAngle);
       const textY3 = centerY3 + (radius3 / 2) * Math.sin(midAngle);
       ctx3.fillStyle = "#000000";
@@ -605,6 +627,5 @@
       ctx3.fillText(biMonthMembers[i], textX3, textY3);
     }
   </script>
-
 </body>
 </html>
