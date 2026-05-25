@@ -189,7 +189,7 @@
     </p>
   </div>
  
-    <!-- Fourth Wheel: PMO Meeting (Bimonthly) -->
+    <!-- Meeting Wheel: PMO Meeting (Bimonthly) -->
   <div class="container">
     <h1>PMO Meeting</h1>
     <canvas id="pmoWheelCanvas" width="600" height="600"></canvas>
@@ -640,12 +640,12 @@
     }
 
     // ------------------------------
-    // Fourth Wheel: PMO Meeting
+    // PMO meeting wheel, bimonthly
     // ------------------------------
     
     // Change this number (0 to 11) to shift the starting member 
     // Example: if offset is 1, it starts one person after the 3rd wheel.
-    const pmoOffset = 3; 
+    const pmoOffset = 1; 
 
     const pmoCurrentMemberIndex = ((nonHolidayCountBimonthly - 1 + pmoOffset) % biMonthMembers.length + biMonthMembers.length) % biMonthMembers.length;
     const pmoCurrentMember = biMonthMembers[pmoCurrentMemberIndex];
