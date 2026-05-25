@@ -189,6 +189,17 @@
     </p>
   </div>
  
+    <!-- Fourth Wheel: PMO Meeting (Bimonthly) -->
+  <div class="container">
+    <h1>PMO Meeting</h1>
+    <canvas id="pmoWheelCanvas" width="600" height="600"></canvas>
+    <p id="pmoCurrentMember"></p>
+    <p id="pmoNextUpdateDate"></p>
+    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+      This meeting wheel updates bimonthly on the last Friday of a month at 23:59:59 (postponed if it's a holiday).
+    </p>
+  </div>
+
   <script>
     // ------------------------------
     // Shared Helper and Variables
@@ -522,7 +533,7 @@
     // Third Wheel: Bimonthly Meeting
     // ------------------------------
     const biMonthMembers = [
-       "YSB", "Tommy", "LWT", "QFY", "LXY", "ZZ", "SJL", "Nathan", "CYJ", "TYX",
+       "YSB", "Tommy", "LWT", "QFY", "LXY", "ZZ", "SJL", "Nathan", "CYJ", "TYX", "XYH", "Danny",
     ];
     
     function getLastFridayOfMonth(year, month) {
@@ -626,6 +637,67 @@
       ctx3.textAlign = "center";
       ctx3.textBaseline = "middle";
       ctx3.fillText(biMonthMembers[i], textX3, textY3);
+    }
+
+    // ------------------------------
+    // Fourth Wheel: PMO Meeting
+    // ------------------------------
+    
+    // Change this number (0 to 11) to shift the starting member 
+    // Example: if offset is 1, it starts one person after the 3rd wheel.
+    const pmoOffset = 3; 
+
+    const pmoCurrentMemberIndex = ((nonHolidayCountBimonthly - 1 + pmoOffset) % biMonthMembers.length + biMonthMembers.length) % biMonthMembers.length;
+    const pmoCurrentMember = biMonthMembers[pmoCurrentMemberIndex];
+
+    document.getElementById("pmoCurrentMember").innerText =
+      "This speaker's turn (" + formattedBiMonthNextUpdate + "): " + pmoCurrentMember;
+
+    const pmoCanvas = document.getElementById("pmoWheelCanvas");
+    const ctx4 = pmoCanvas.getContext("2d");
+    const centerX4 = pmoCanvas.width / 2;
+    const centerY4 = pmoCanvas.height / 2;
+    const radius4 = Math.min(centerX4, centerY4) - 20;
+    
+    for (let i = 0; i < numSegments3; i++) {
+      const startAngle = i * segmentAngle3;
+      const endAngle = startAngle + segmentAngle3;
+      const midAngle = startAngle + segmentAngle3 / 2;
+      
+      const innerX4 = centerX4;
+      const innerY4 = centerY4;
+      const outerX4 = centerX4 + radius4 * Math.cos(midAngle);
+      const outerY4 = centerY4 + radius4 * Math.sin(midAngle);
+      let gradient4 = ctx4.createLinearGradient(innerX4, innerY4, outerX4, outerY4);
+      let baseColor = colors[i % colors.length];
+      gradient4.addColorStop(0, "white");
+      gradient4.addColorStop(1, baseColor);
+      
+      ctx4.beginPath();
+      ctx4.moveTo(centerX4, centerY4);
+      ctx4.arc(centerX4, centerY4, radius4, startAngle, endAngle);
+      ctx4.closePath();
+      ctx4.fillStyle = gradient4;
+      ctx4.fill();
+
+      // Highlight the active member for the PMO wheel using the new index
+      if (i === pmoCurrentMemberIndex) {
+        ctx4.save();
+        ctx4.shadowColor = "rgba(0,0,0,0.6)";
+        ctx4.shadowBlur = 10;
+        ctx4.lineWidth = 8;
+        ctx4.strokeStyle = "#FF0000";
+        ctx4.stroke();
+        ctx4.restore();
+      }
+
+      const textX4 = centerX4 + (radius4 / 2) * Math.cos(midAngle);
+      const textY4 = centerY4 + (radius4 / 2) * Math.sin(midAngle);
+      ctx4.fillStyle = "#000000";
+      ctx4.font = "1.2em Arial";
+      ctx4.textAlign = "center";
+      ctx4.textBaseline = "middle";
+      ctx4.fillText(biMonthMembers[i], textX4, textY4);
     }
   </script>
 </body>
