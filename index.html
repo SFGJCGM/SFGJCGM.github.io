@@ -639,31 +639,78 @@
       ctx3.fillText(biMonthMembers[i], textX3, textY3);
     }
 
-    // ------------------------------
-    // PMO meeting wheel, bimonthly
-    // ------------------------------
-    
-    // Change this number (0 to 11) to shift the starting member 
-    // Example: if offset is 1, it starts one person after the 3rd wheel.
-    const pmoOffset = 1; 
 
-    const pmoCurrentMemberIndex = ((nonHolidayCountBimonthly - 1 + pmoOffset) % biMonthMembers.length + biMonthMembers.length) % biMonthMembers.length;
+    // ------------------------------
+    // PMO meeting wheel, bimonthly (first Friday of month)
+    // ------------------------------
+
+    function getFirstFridayOfMonth(year, month) {
+      const firstDay = new Date(year, month, 1);
+      let firstFriday = new Date(firstDay);
+      while (firstFriday.getDay() !== 5) {
+        firstFriday.setDate(firstFriday.getDate() + 1);
+      }
+      firstFriday.setHours(23, 59, 59, 0);
+      return firstFriday;
+    }
+
+    function getPMOMeetingDateForIteration(iteration) {
+      const refYear = 2025;
+      const refMonth = 3; // April as starting reference (same cadence as the other bimonthly wheel)
+      const meetingMonthTotal = refMonth + iteration * 2;
+      const meetingYear = refYear + Math.floor(meetingMonthTotal / 12);
+      const meetingMonth = meetingMonthTotal % 12;
+      return getFirstFridayOfMonth(meetingYear, meetingMonth);
+    }
+
+    // Use same holiday list or provide a PMO-specific list if needed
+    const pmoHolidayDates = biMonthHolidayDates.slice();
+
+    let pmoIteration = 0;
+    let nonHolidayCountPMO = 0;
+    let nextPmoMeetingDate = null;
+
+    while (true) {
+      const meetingDate = getPMOMeetingDateForIteration(pmoIteration);
+      if (meetingDate <= now) {
+        if (!pmoHolidayDates.includes(toLocalISO(meetingDate))) {
+          nonHolidayCountPMO++;
+        }
+        pmoIteration++;
+        continue;
+      } else {
+        nextPmoMeetingDate = meetingDate;
+        while (pmoHolidayDates.includes(toLocalISO(nextPmoMeetingDate))) {
+          pmoIteration++;
+          nextPmoMeetingDate = getPMOMeetingDateForIteration(pmoIteration);
+        }
+        break;
+      }
+    }
+
+    const pmoOffset = 1; // adjust as needed
+    const pmoCurrentMemberIndex = ((nonHolidayCountPMO - 1 + pmoOffset) % biMonthMembers.length + biMonthMembers.length) % biMonthMembers.length;
     const pmoCurrentMember = biMonthMembers[pmoCurrentMemberIndex];
 
+    const formattedPmoNextUpdate = monthNames[nextPmoMeetingDate.getMonth()] + " " +
+                                  nextPmoMeetingDate.getDate() + ", " +
+                                  nextPmoMeetingDate.getFullYear();
+
     document.getElementById("pmoCurrentMember").innerText =
-      "This speaker's turn (" + formattedBiMonthNextUpdate + "): " + pmoCurrentMember;
+      "This speaker's turn (" + formattedPmoNextUpdate + "): " + pmoCurrentMember;
+    document.getElementById("pmoNextUpdateDate").innerText = "Next update: " + formattedPmoNextUpdate;
 
     const pmoCanvas = document.getElementById("pmoWheelCanvas");
     const ctx4 = pmoCanvas.getContext("2d");
     const centerX4 = pmoCanvas.width / 2;
     const centerY4 = pmoCanvas.height / 2;
     const radius4 = Math.min(centerX4, centerY4) - 20;
-    
+
     for (let i = 0; i < numSegments3; i++) {
       const startAngle = i * segmentAngle3;
       const endAngle = startAngle + segmentAngle3;
       const midAngle = startAngle + segmentAngle3 / 2;
-      
+
       const innerX4 = centerX4;
       const innerY4 = centerY4;
       const outerX4 = centerX4 + radius4 * Math.cos(midAngle);
@@ -672,7 +719,7 @@
       let baseColor = colors[i % colors.length];
       gradient4.addColorStop(0, "white");
       gradient4.addColorStop(1, baseColor);
-      
+
       ctx4.beginPath();
       ctx4.moveTo(centerX4, centerY4);
       ctx4.arc(centerX4, centerY4, radius4, startAngle, endAngle);
@@ -680,7 +727,6 @@
       ctx4.fillStyle = gradient4;
       ctx4.fill();
 
-      // Highlight the active member for the PMO wheel using the new index
       if (i === pmoCurrentMemberIndex) {
         ctx4.save();
         ctx4.shadowColor = "rgba(0,0,0,0.6)";
@@ -699,6 +745,7 @@
       ctx4.textBaseline = "middle";
       ctx4.fillText(biMonthMembers[i], textX4, textY4);
     }
+
   </script>
 </body>
 </html>
