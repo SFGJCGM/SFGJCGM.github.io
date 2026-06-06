@@ -698,7 +698,7 @@
     const pmoOffset = 1; // offset between the two bimonthly wheels, can be adjusted as needed
 
     // Re-use currentMemberIndex from Wheel 3, add offset.
-    const pmoCurrentMemberIndex = (currentMemberIndex + pmoOffset) % biMonthMembers.length;
+    const pmoCurrentMemberIndex = ((nonHolidayCountPMO - 1 + pmoOffset) % biMonthMembers.length + biMonthMembers.length) % biMonthMembers.length;
     const pmoCurrentMember = biMonthMembers[pmoCurrentMemberIndex];
 
     const formattedPmoNextUpdate = monthNames[nextPmoMeetingDate.getMonth()] + " " +
